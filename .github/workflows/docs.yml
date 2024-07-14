@@ -36,7 +36,9 @@ jobs:
     - name: Run docfx
       run: |
         nox -s docfx
-        
+  publish:
+    runs-on: ubuntu-latest
+    steps:
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
