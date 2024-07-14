@@ -20,6 +20,15 @@ jobs:
     - name: Run docs
       run: |
         nox -s docs
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      with:
+        publish_branch: gh-pages
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: docs/_build/
+        force_orphan: true
+
   docfx:
     runs-on: ubuntu-latest
     steps:
@@ -36,14 +45,12 @@ jobs:
     - name: Run docfx
       run: |
         nox -s docfx
-  publish:
-    runs-on: ubuntu-latest
-    steps:
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       with:
         publish_branch: gh-pages
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: _build/
+        publish_dir: docs/_build/
         force_orphan: true
+
