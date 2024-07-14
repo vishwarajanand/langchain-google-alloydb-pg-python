@@ -1,0 +1,51 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- children:
+  - langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  - langchain_google_alloydb_pg.chat_message_history._aget_messages
+  fullName: langchain_google_alloydb_pg.chat_message_history
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.chat_message_history
+  name: chat_message_history
+  source:
+    id: chat_message_history
+    path: src/langchain_google_alloydb_pg/chat_message_history.py
+    startLine: 0
+  summary: API documentation for `chat_message_history` module.
+  syntax: {}
+  type: module
+  uid: langchain_google_alloydb_pg.chat_message_history
+- attributes: []
+  enum: []
+  fullName: langchain_google_alloydb_pg.chat_message_history._aget_messages
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.chat_message_history
+  name: _aget_messages
+  source:
+    id: _aget_messages
+    path: src/langchain_google_alloydb_pg/chat_message_history.py
+    startLine: 27
+  summary: 'Retrieve the messages from AlloyDB
+
+
+    '
+  syntax:
+    content: "_aget_messages(\n    engine: langchain_google_alloydb_pg.engine.AlloyDBEngine,\n\
+      \    session_id: str,\n    table_name: str,\n) -> typing.List[langchain_core.messages.base.BaseMessage]"
+    parameters: []
+  type: function
+  uid: langchain_google_alloydb_pg.chat_message_history._aget_messages
+references:
+- fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  isExternal: false
+  name: AlloyDBChatMessageHistory
+  parent: langchain_google_alloydb_pg.chat_message_history
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+- fullName: langchain_google_alloydb_pg.chat_message_history._aget_messages
+  isExternal: false
+  name: _aget_messages
+  parent: langchain_google_alloydb_pg.chat_message_history
+  uid: langchain_google_alloydb_pg.chat_message_history._aget_messages

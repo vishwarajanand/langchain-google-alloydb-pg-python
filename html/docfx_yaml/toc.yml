@@ -1,0 +1,87 @@
+- items:
+  - href: index.md
+    name: Overview
+  - items:
+    - href: summary_overview.md
+      name: Overview
+    - href: summary_class.yml
+      name: Classes
+    - href: summary_method.yml
+      name: Methods
+    - href: summary_property.yml
+      name: Properties and Attributes
+    name: langchain-google-alloydb-pg APIs
+  - href: changelog.md
+    name: Changelog
+  - items:
+    - items:
+      - name: Overview
+        uid: langchain_google_alloydb_pg.chat_message_history
+      - name: AlloyDBChatMessageHistory
+        uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+      name: chat_message_history
+      uid: langchain_google_alloydb_pg.chat_message_history
+    name: Chat Message History
+  - items:
+    - items:
+      - name: Overview
+        uid: langchain_google_alloydb_pg.engine
+      - name: AlloyDBEngine
+        uid: langchain_google_alloydb_pg.engine.AlloyDBEngine
+      - name: Column
+        uid: langchain_google_alloydb_pg.engine.Column
+      name: engine
+      uid: langchain_google_alloydb_pg.engine
+    name: Engine
+  - items:
+    - items:
+      - name: Overview
+        uid: langchain_google_alloydb_pg.indexes
+      - name: BaseIndex
+        uid: langchain_google_alloydb_pg.indexes.BaseIndex
+      - name: DistanceStrategy
+        uid: langchain_google_alloydb_pg.indexes.DistanceStrategy
+      - name: ExactNearestNeighbor
+        uid: langchain_google_alloydb_pg.indexes.ExactNearestNeighbor
+      - name: HNSWIndex
+        uid: langchain_google_alloydb_pg.indexes.HNSWIndex
+      - name: HNSWQueryOptions
+        uid: langchain_google_alloydb_pg.indexes.HNSWQueryOptions
+      - name: IVFFlatIndex
+        uid: langchain_google_alloydb_pg.indexes.IVFFlatIndex
+      - name: IVFFlatQueryOptions
+        uid: langchain_google_alloydb_pg.indexes.IVFFlatQueryOptions
+      - name: IVFIndex
+        uid: langchain_google_alloydb_pg.indexes.IVFIndex
+      - name: IVFQueryOptions
+        uid: langchain_google_alloydb_pg.indexes.IVFQueryOptions
+      - name: QueryOptions
+        uid: langchain_google_alloydb_pg.indexes.QueryOptions
+      - name: ScaNNIndex
+        uid: langchain_google_alloydb_pg.indexes.ScaNNIndex
+      - name: StrategyMixin
+        uid: langchain_google_alloydb_pg.indexes.StrategyMixin
+      name: indexes
+      uid: langchain_google_alloydb_pg.indexes
+    name: Indexes
+  - items:
+    - items:
+      - name: Overview
+        uid: langchain_google_alloydb_pg.loader
+      - name: AlloyDBDocumentSaver
+        uid: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver
+      - name: AlloyDBLoader
+        uid: langchain_google_alloydb_pg.loader.AlloyDBLoader
+      name: loader
+      uid: langchain_google_alloydb_pg.loader
+    name: Loader
+  - items:
+    - items:
+      - name: Overview
+        uid: langchain_google_alloydb_pg.vectorstore
+      - name: AlloyDBVectorStore
+        uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+      name: vectorstore
+      uid: langchain_google_alloydb_pg.vectorstore
+    name: Vectorstore
+  name: langchain-google-alloydb-pg

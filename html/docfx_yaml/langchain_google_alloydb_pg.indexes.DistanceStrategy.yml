@@ -1,0 +1,62 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- attributes: []
+  children:
+  - langchain_google_alloydb_pg.indexes.DistanceStrategy._generate_next_value_
+  class: langchain_google_alloydb_pg.indexes.DistanceStrategy
+  enum: []
+  fullName: langchain_google_alloydb_pg.indexes.DistanceStrategy
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.indexes
+  name: DistanceStrategy
+  source:
+    id: DistanceStrategy
+    path: src/langchain_google_alloydb_pg/indexes.py
+    startLine: 29
+  summary: 'Enumerator of the Distance strategies.
+
+
+    '
+  syntax:
+    content: DistanceStrategy(value)
+    parameters: []
+  type: class
+  uid: langchain_google_alloydb_pg.indexes.DistanceStrategy
+- attributes: []
+  class: langchain_google_alloydb_pg.indexes.DistanceStrategy
+  enum: []
+  fullName: langchain_google_alloydb_pg.indexes.DistanceStrategy._generate_next_value_
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.indexes
+  name: _generate_next_value_
+  source:
+    id: _generate_next_value_
+    path: enum.py
+    startLine: 724
+  summary: 'Generate the next value when not given.
+
+
+    name: the name of the member
+
+    start: the initial start value or None
+
+    count: the number of existing members
+
+    last_value: the last value assigned or None
+
+
+    '
+  syntax:
+    content: _generate_next_value_(start, count, last_values)
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.indexes.DistanceStrategy._generate_next_value_
+references:
+- fullName: langchain_google_alloydb_pg.indexes.DistanceStrategy._generate_next_value_
+  isExternal: false
+  name: _generate_next_value_
+  parent: langchain_google_alloydb_pg.indexes.DistanceStrategy
+  uid: langchain_google_alloydb_pg.indexes.DistanceStrategy._generate_next_value_

@@ -1,0 +1,26 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- attributes: []
+  children: []
+  class: langchain_google_alloydb_pg.indexes.IVFFlatQueryOptions
+  enum: []
+  fullName: langchain_google_alloydb_pg.indexes.IVFFlatQueryOptions
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.indexes
+  name: IVFFlatQueryOptions
+  source:
+    id: IVFFlatQueryOptions
+    path: src/langchain_google_alloydb_pg/indexes.py
+    startLine: 96
+  summary: 'IVFFlatQueryOptions(probes: int = 1)
+
+
+    '
+  syntax:
+    content: 'IVFFlatQueryOptions(probes: int = 1)'
+    parameters: []
+  type: class
+  uid: langchain_google_alloydb_pg.indexes.IVFFlatQueryOptions
+references: []

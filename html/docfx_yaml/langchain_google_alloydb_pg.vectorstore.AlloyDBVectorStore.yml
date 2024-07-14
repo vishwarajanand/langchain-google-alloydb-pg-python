@@ -1,0 +1,731 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- attributes: []
+  children:
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_documents
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_texts
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_documents
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_texts
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.adelete
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_documents
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_texts
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search_by_vector
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_by_vector
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_with_score
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.create
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.delete
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.embeddings
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_documents
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_texts
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search_by_vector
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_by_vector
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_with_score
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: AlloyDBVectorStore
+  source:
+    id: AlloyDBVectorStore
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 39
+  summary: 'Google AlloyDB Vector Store class
+
+
+    '
+  syntax:
+    content: "AlloyDBVectorStore(\n    key: object,\n    engine: langchain_google_alloydb_pg.engine.AlloyDBEngine,\n\
+      \    embedding_service: langchain_core.embeddings.embeddings.Embeddings,\n \
+      \   table_name: str,\n    content_column: str = \"content\",\n    embedding_column:\
+      \ str = \"embedding\",\n    metadata_columns: typing.List[str] = [],\n    id_column:\
+      \ str = \"langchain_id\",\n    metadata_json_column: typing.Optional[str] =\
+      \ \"langchain_metadata\",\n    distance_strategy: langchain_google_alloydb_pg.indexes.DistanceStrategy\
+      \ = DistanceStrategy.COSINE_DISTANCE,\n    k: int = 4,\n    fetch_k: int = 20,\n\
+      \    lambda_mult: float = 0.5,\n    index_query_options: typing.Optional[\n\
+      \        langchain_google_alloydb_pg.indexes.QueryOptions\n    ] = None,\n)"
+    parameters: []
+  type: class
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_documents
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: aadd_documents
+  source:
+    id: aadd_documents
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 276
+  summary: 'Run more documents through the embeddings and add to the vectorstore.
+
+    '
+  syntax:
+    content: "aadd_documents(\n    documents: typing.List[langchain_core.documents.base.Document],\n\
+      \    ids: typing.Optional[typing.List[str]] = None,\n    **kwargs: typing.Any\n\
+      ) -> typing.List[str]"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_documents
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_texts
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: aadd_texts
+  source:
+    id: aadd_texts
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 263
+  summary: 'Run more texts through the embeddings and add to the vectorstore.
+
+    '
+  syntax:
+    content: "aadd_texts(\n    texts: typing.Iterable[str],\n    metadatas: typing.Optional[typing.List[dict]]\
+      \ = None,\n    ids: typing.Optional[typing.List[str]] = None,\n    **kwargs:\
+      \ typing.Any\n) -> typing.List[str]"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_texts
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_documents
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: add_documents
+  source:
+    id: add_documents
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 298
+  summary: 'Add or update documents in the vectorstore.
+
+    '
+  syntax:
+    content: "add_documents(\n    documents: typing.List[langchain_core.documents.base.Document],\n\
+      \    ids: typing.Optional[typing.List[str]] = None,\n    **kwargs: typing.Any\n\
+      ) -> typing.List[str]"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_documents
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_texts
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: add_texts
+  source:
+    id: add_texts
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 287
+  summary: 'Run more texts through the embeddings and add to the vectorstore.
+
+    '
+  syntax:
+    content: "add_texts(\n    texts: typing.Iterable[str],\n    metadatas: typing.Optional[typing.List[dict]]\
+      \ = None,\n    ids: typing.Optional[typing.List[str]] = None,\n    **kwargs:\
+      \ typing.Any\n) -> typing.List[str]"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_texts
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.adelete
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: adelete
+  source:
+    id: adelete
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 306
+  summary: 'Delete by vector ID or other criteria.
+
+    '
+  syntax:
+    content: "adelete(\n    ids: typing.Optional[typing.List[str]] = None, **kwargs:\
+      \ typing.Any\n) -> typing.Optional[bool]"
+    parameters: []
+    returns:
+    - description: True if deletion is successful, False otherwise, None if not implemented.
+      var_type: Optional[bool]
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.adelete
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_documents
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: afrom_documents
+  source:
+    id: afrom_documents
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 357
+  summary: 'Return VectorStore initialized from documents and embeddings.
+
+    '
+  syntax:
+    content: "afrom_documents(\n    documents: typing.List[langchain_core.documents.base.Document],\n\
+      \    embedding: langchain_core.embeddings.embeddings.Embeddings,\n    engine:\
+      \ langchain_google_alloydb_pg.engine.AlloyDBEngine,\n    table_name: str,\n\
+      \    ids: typing.Optional[typing.List[str]] = None,\n    content_column: str\
+      \ = \"content\",\n    embedding_column: str = \"embedding\",\n    metadata_columns:\
+      \ typing.List[str] = [],\n    ignore_metadata_columns: typing.Optional[typing.List[str]]\
+      \ = None,\n    id_column: str = \"langchain_id\",\n    metadata_json_column:\
+      \ str = \"langchain_metadata\",\n    **kwargs: typing.Any\n) -> langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_documents
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_texts
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: afrom_texts
+  source:
+    id: afrom_texts
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 326
+  summary: 'Return VectorStore initialized from texts and embeddings.
+
+    '
+  syntax:
+    content: "afrom_texts(\n    texts: typing.List[str],\n    embedding: langchain_core.embeddings.embeddings.Embeddings,\n\
+      \    engine: langchain_google_alloydb_pg.engine.AlloyDBEngine,\n    table_name:\
+      \ str,\n    metadatas: typing.Optional[typing.List[dict]] = None,\n    ids:\
+      \ typing.Optional[typing.List[str]] = None,\n    content_column: str = \"content\"\
+      ,\n    embedding_column: str = \"embedding\",\n    metadata_columns: typing.List[str]\
+      \ = [],\n    ignore_metadata_columns: typing.Optional[typing.List[str]] = None,\n\
+      \    id_column: str = \"langchain_id\",\n    metadata_json_column: str = \"\
+      langchain_metadata\",\n    **kwargs: typing.Any\n) -> langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_texts
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: amax_marginal_relevance_search
+  source:
+    id: amax_marginal_relevance_search
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 556
+  summary: 'Return docs selected using the maximal marginal relevance.
+
+
+    Maximal marginal relevance optimizes for similarity to query AND diversity
+
+    among selected documents.
+
+    '
+  syntax:
+    content: "amax_marginal_relevance_search(\n    query: str,\n    k: typing.Optional[int]\
+      \ = None,\n    fetch_k: typing.Optional[int] = None,\n    lambda_mult: typing.Optional[float]\
+      \ = None,\n    filter: typing.Optional[str] = None,\n    **kwargs: typing.Any\n\
+      ) -> typing.List[langchain_core.documents.base.Document]"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search_by_vector
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: amax_marginal_relevance_search_by_vector
+  source:
+    id: amax_marginal_relevance_search_by_vector
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 576
+  summary: 'Return docs selected using the maximal marginal relevance.
+
+
+    '
+  syntax:
+    content: "amax_marginal_relevance_search_by_vector(\n    embedding: typing.List[float],\n\
+      \    k: typing.Optional[int] = None,\n    fetch_k: typing.Optional[int] = None,\n\
+      \    lambda_mult: typing.Optional[float] = None,\n    filter: typing.Optional[str]\
+      \ = None,\n    **kwargs: typing.Any\n) -> typing.List[langchain_core.documents.base.Document]"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search_by_vector
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: asimilarity_search
+  source:
+    id: asimilarity_search
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 485
+  summary: 'Return docs most similar to query.
+
+    '
+  syntax:
+    content: "asimilarity_search(\n    query: str,\n    k: typing.Optional[int] =\
+      \ None,\n    filter: typing.Optional[str] = None,\n    **kwargs: typing.Any\n\
+      ) -> typing.List[langchain_core.documents.base.Document]"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_by_vector
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: asimilarity_search_by_vector
+  source:
+    id: asimilarity_search_by_vector
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 511
+  summary: 'Return docs most similar to embedding vector.
+
+    '
+  syntax:
+    content: "asimilarity_search_by_vector(\n    embedding: typing.List[float],\n\
+      \    k: typing.Optional[int] = None,\n    filter: typing.Optional[str] = None,\n\
+      \    **kwargs: typing.Any\n) -> typing.List[langchain_core.documents.base.Document]"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_by_vector
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_with_score
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: asimilarity_search_with_score
+  source:
+    id: asimilarity_search_with_score
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 498
+  summary: 'Run similarity search with distance.
+
+    '
+  syntax:
+    content: "asimilarity_search_with_score(\n    query: str,\n    k: typing.Optional[int]\
+      \ = None,\n    filter: typing.Optional[str] = None,\n    **kwargs: typing.Any\n\
+      ) -> typing.List[typing.Tuple[langchain_core.documents.base.Document, float]]"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_with_score
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.create
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: create
+  source:
+    id: create
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 80
+  summary: 'Constructor for AlloyDBVectorStore.
+
+
+    '
+  syntax:
+    content: "create(\n    engine: langchain_google_alloydb_pg.engine.AlloyDBEngine,\n\
+      \    embedding_service: langchain_core.embeddings.embeddings.Embeddings,\n \
+      \   table_name: str,\n    content_column: str = \"content\",\n    embedding_column:\
+      \ str = \"embedding\",\n    metadata_columns: typing.List[str] = [],\n    ignore_metadata_columns:\
+      \ typing.Optional[typing.List[str]] = None,\n    id_column: str = \"langchain_id\"\
+      ,\n    metadata_json_column: typing.Optional[str] = \"langchain_metadata\",\n\
+      \    distance_strategy: langchain_google_alloydb_pg.indexes.DistanceStrategy\
+      \ = DistanceStrategy.COSINE_DISTANCE,\n    k: int = 4,\n    fetch_k: int = 20,\n\
+      \    lambda_mult: float = 0.5,\n    index_query_options: typing.Optional[\n\
+      \        langchain_google_alloydb_pg.indexes.QueryOptions\n    ] = None,\n)\
+      \ -> langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore"
+    parameters:
+    - description: Connection pool engine for managing connections to AlloyDB database.
+      id: engine
+      var_type: AlloyDBEngine
+    - description: Text embedding model to use.
+      id: embedding_service
+      var_type: Embeddings
+    - description: Name of the existing table or the table to be created.
+      id: table_name
+      var_type: str
+    - description: "Column that represent a Document\u2019s page_content. Defaults\
+        \ to \"content\"."
+      id: content_column
+      var_type: str
+    - description: Column for embedding vectors. The embedding is generated from the
+        document value. Defaults to "embedding".
+      id: embedding_column
+      var_type: str
+    - description: Column(s) that represent a document's metadata.
+      id: metadata_columns
+      var_type: List[str]
+    - description: Column(s) to ignore in pre-existing tables for a document's metadata.
+        Can not be used with metadata_columns. Defaults to None.
+      id: ignore_metadata_columns
+      var_type: List[str]
+    - description: Column that represents the Document's id. Defaults to "langchain_id".
+      id: id_column
+      var_type: str
+    - description: Column to store metadata as JSON. Defaults to "langchain_metadata".
+      id: metadata_json_column
+      var_type: str
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.create
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.delete
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: delete
+  source:
+    id: delete
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 319
+  summary: 'Delete by vector ID or other criteria.
+
+    '
+  syntax:
+    content: "delete(\n    ids: typing.Optional[typing.List[str]] = None, **kwargs:\
+      \ typing.Any\n) -> typing.Optional[bool]"
+    parameters: []
+    returns:
+    - description: True if deletion is successful, False otherwise, None if not implemented.
+      var_type: Optional[bool]
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.delete
+- &id001
+  attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.embeddings
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: embeddings
+  source:
+    id: embeddings
+    path: null
+    startLine: null
+  summary: 'Access the query embedding object if available.
+
+
+    '
+  syntax: {}
+  type: property
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.embeddings
+- *id001
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_documents
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: from_documents
+  source:
+    id: from_documents
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 423
+  summary: 'Return VectorStore initialized from documents and embeddings.
+
+    '
+  syntax:
+    content: "from_documents(\n    documents: typing.List[langchain_core.documents.base.Document],\n\
+      \    embedding: langchain_core.embeddings.embeddings.Embeddings,\n    engine:\
+      \ langchain_google_alloydb_pg.engine.AlloyDBEngine,\n    table_name: str,\n\
+      \    ids: typing.Optional[typing.List[str]] = None,\n    content_column: str\
+      \ = \"content\",\n    embedding_column: str = \"embedding\",\n    metadata_columns:\
+      \ typing.List[str] = [],\n    ignore_metadata_columns: typing.Optional[typing.List[str]]\
+      \ = None,\n    id_column: str = \"langchain_id\",\n    metadata_json_column:\
+      \ str = \"langchain_metadata\",\n    **kwargs: typing.Any\n) -> langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_documents
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_texts
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: from_texts
+  source:
+    id: from_texts
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 389
+  summary: 'Return VectorStore initialized from texts and embeddings.
+
+    '
+  syntax:
+    content: "from_texts(\n    texts: typing.List[str],\n    embedding: langchain_core.embeddings.embeddings.Embeddings,\n\
+      \    engine: langchain_google_alloydb_pg.engine.AlloyDBEngine,\n    table_name:\
+      \ str,\n    metadatas: typing.Optional[typing.List[dict]] = None,\n    ids:\
+      \ typing.Optional[typing.List[str]] = None,\n    content_column: str = \"content\"\
+      ,\n    embedding_column: str = \"embedding\",\n    metadata_columns: typing.List[str]\
+      \ = [],\n    ignore_metadata_columns: typing.Optional[typing.List[str]] = None,\n\
+      \    id_column: str = \"langchain_id\",\n    metadata_json_column: str = \"\
+      langchain_metadata\",\n    **kwargs: typing.Any\n) -> langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_texts
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: max_marginal_relevance_search
+  source:
+    id: max_marginal_relevance_search
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 676
+  summary: 'Return docs selected using the maximal marginal relevance.
+
+
+    Maximal marginal relevance optimizes for similarity to query AND diversity
+
+    among selected documents.
+
+    '
+  syntax:
+    content: "max_marginal_relevance_search(\n    query: str,\n    k: typing.Optional[int]\
+      \ = None,\n    fetch_k: typing.Optional[int] = None,\n    lambda_mult: typing.Optional[float]\
+      \ = None,\n    filter: typing.Optional[str] = None,\n    **kwargs: typing.Any\n\
+      ) -> typing.List[langchain_core.documents.base.Document]"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search_by_vector
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: max_marginal_relevance_search_by_vector
+  source:
+    id: max_marginal_relevance_search_by_vector
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 695
+  summary: 'Return docs selected using the maximal marginal relevance.
+
+
+    Maximal marginal relevance optimizes for similarity to query AND diversity
+
+    among selected documents.
+
+    '
+  syntax:
+    content: "max_marginal_relevance_search_by_vector(\n    embedding: typing.List[float],\n\
+      \    k: typing.Optional[int] = None,\n    fetch_k: typing.Optional[int] = None,\n\
+      \    lambda_mult: typing.Optional[float] = None,\n    filter: typing.Optional[str]\
+      \ = None,\n    **kwargs: typing.Any\n) -> typing.List[langchain_core.documents.base.Document]"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search_by_vector
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: similarity_search
+  source:
+    id: similarity_search
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 474
+  summary: 'Return docs most similar to query.
+
+    '
+  syntax:
+    content: "similarity_search(\n    query: str,\n    k: typing.Optional[int] = None,\n\
+      \    filter: typing.Optional[str] = None,\n    **kwargs: typing.Any\n) -> typing.List[langchain_core.documents.base.Document]"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_by_vector
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: similarity_search_by_vector
+  source:
+    id: similarity_search_by_vector
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 654
+  summary: 'Return docs most similar to embedding vector.
+
+    '
+  syntax:
+    content: "similarity_search_by_vector(\n    embedding: typing.List[float],\n \
+      \   k: typing.Optional[int] = None,\n    filter: typing.Optional[str] = None,\n\
+      \    **kwargs: typing.Any\n) -> typing.List[langchain_core.documents.base.Document]"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_by_vector
+- attributes: []
+  class: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_with_score
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: similarity_search_with_score
+  source:
+    id: similarity_search_with_score
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 644
+  summary: 'Run similarity search with distance.
+
+    '
+  syntax:
+    content: "similarity_search_with_score(\n    query: str,\n    k: typing.Optional[int]\
+      \ = None,\n    filter: typing.Optional[str] = None,\n    **kwargs: typing.Any\n\
+      ) -> typing.List[typing.Tuple[langchain_core.documents.base.Document, float]]"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_with_score
+references:
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_documents
+  isExternal: false
+  name: aadd_documents
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_documents
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_texts
+  isExternal: false
+  name: aadd_texts
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_texts
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_documents
+  isExternal: false
+  name: add_documents
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_documents
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_texts
+  isExternal: false
+  name: add_texts
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_texts
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.adelete
+  isExternal: false
+  name: adelete
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.adelete
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_documents
+  isExternal: false
+  name: afrom_documents
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_documents
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_texts
+  isExternal: false
+  name: afrom_texts
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_texts
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search
+  isExternal: false
+  name: amax_marginal_relevance_search
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search_by_vector
+  isExternal: false
+  name: amax_marginal_relevance_search_by_vector
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search_by_vector
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search
+  isExternal: false
+  name: asimilarity_search
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_by_vector
+  isExternal: false
+  name: asimilarity_search_by_vector
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_by_vector
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_with_score
+  isExternal: false
+  name: asimilarity_search_with_score
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_with_score
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.create
+  isExternal: false
+  name: create
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.create
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.delete
+  isExternal: false
+  name: delete
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.delete
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.embeddings
+  isExternal: false
+  name: embeddings
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.embeddings
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_documents
+  isExternal: false
+  name: from_documents
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_documents
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_texts
+  isExternal: false
+  name: from_texts
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_texts
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search
+  isExternal: false
+  name: max_marginal_relevance_search
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search_by_vector
+  isExternal: false
+  name: max_marginal_relevance_search_by_vector
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search_by_vector
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search
+  isExternal: false
+  name: similarity_search
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_by_vector
+  isExternal: false
+  name: similarity_search_by_vector
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_by_vector
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_with_score
+  isExternal: false
+  name: similarity_search_with_score
+  parent: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_with_score

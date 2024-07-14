@@ -1,0 +1,26 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- attributes: []
+  children: []
+  class: langchain_google_alloydb_pg.indexes.HNSWQueryOptions
+  enum: []
+  fullName: langchain_google_alloydb_pg.indexes.HNSWQueryOptions
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.indexes
+  name: HNSWQueryOptions
+  source:
+    id: HNSWQueryOptions
+    path: src/langchain_google_alloydb_pg/indexes.py
+    startLine: 79
+  summary: 'HNSWQueryOptions(ef_search: int = 40)
+
+
+    '
+  syntax:
+    content: 'HNSWQueryOptions(ef_search: int = 40)'
+    parameters: []
+  type: class
+  uid: langchain_google_alloydb_pg.indexes.HNSWQueryOptions
+references: []

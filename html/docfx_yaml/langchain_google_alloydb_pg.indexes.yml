@@ -1,0 +1,90 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- children:
+  - langchain_google_alloydb_pg.indexes.BaseIndex
+  - langchain_google_alloydb_pg.indexes.DistanceStrategy
+  - langchain_google_alloydb_pg.indexes.ExactNearestNeighbor
+  - langchain_google_alloydb_pg.indexes.HNSWIndex
+  - langchain_google_alloydb_pg.indexes.HNSWQueryOptions
+  - langchain_google_alloydb_pg.indexes.IVFFlatIndex
+  - langchain_google_alloydb_pg.indexes.IVFFlatQueryOptions
+  - langchain_google_alloydb_pg.indexes.IVFIndex
+  - langchain_google_alloydb_pg.indexes.IVFQueryOptions
+  - langchain_google_alloydb_pg.indexes.QueryOptions
+  - langchain_google_alloydb_pg.indexes.ScaNNIndex
+  - langchain_google_alloydb_pg.indexes.StrategyMixin
+  fullName: langchain_google_alloydb_pg.indexes
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.indexes
+  name: indexes
+  source:
+    id: indexes
+    path: src/langchain_google_alloydb_pg/indexes.py
+    startLine: 0
+  summary: API documentation for `indexes` module.
+  syntax: {}
+  type: module
+  uid: langchain_google_alloydb_pg.indexes
+references:
+- fullName: langchain_google_alloydb_pg.indexes.BaseIndex
+  isExternal: false
+  name: BaseIndex
+  parent: langchain_google_alloydb_pg.indexes
+  uid: langchain_google_alloydb_pg.indexes.BaseIndex
+- fullName: langchain_google_alloydb_pg.indexes.DistanceStrategy
+  isExternal: false
+  name: DistanceStrategy
+  parent: langchain_google_alloydb_pg.indexes
+  uid: langchain_google_alloydb_pg.indexes.DistanceStrategy
+- fullName: langchain_google_alloydb_pg.indexes.ExactNearestNeighbor
+  isExternal: false
+  name: ExactNearestNeighbor
+  parent: langchain_google_alloydb_pg.indexes
+  uid: langchain_google_alloydb_pg.indexes.ExactNearestNeighbor
+- fullName: langchain_google_alloydb_pg.indexes.HNSWIndex
+  isExternal: false
+  name: HNSWIndex
+  parent: langchain_google_alloydb_pg.indexes
+  uid: langchain_google_alloydb_pg.indexes.HNSWIndex
+- fullName: langchain_google_alloydb_pg.indexes.HNSWQueryOptions
+  isExternal: false
+  name: HNSWQueryOptions
+  parent: langchain_google_alloydb_pg.indexes
+  uid: langchain_google_alloydb_pg.indexes.HNSWQueryOptions
+- fullName: langchain_google_alloydb_pg.indexes.IVFFlatIndex
+  isExternal: false
+  name: IVFFlatIndex
+  parent: langchain_google_alloydb_pg.indexes
+  uid: langchain_google_alloydb_pg.indexes.IVFFlatIndex
+- fullName: langchain_google_alloydb_pg.indexes.IVFFlatQueryOptions
+  isExternal: false
+  name: IVFFlatQueryOptions
+  parent: langchain_google_alloydb_pg.indexes
+  uid: langchain_google_alloydb_pg.indexes.IVFFlatQueryOptions
+- fullName: langchain_google_alloydb_pg.indexes.IVFIndex
+  isExternal: false
+  name: IVFIndex
+  parent: langchain_google_alloydb_pg.indexes
+  uid: langchain_google_alloydb_pg.indexes.IVFIndex
+- fullName: langchain_google_alloydb_pg.indexes.IVFQueryOptions
+  isExternal: false
+  name: IVFQueryOptions
+  parent: langchain_google_alloydb_pg.indexes
+  uid: langchain_google_alloydb_pg.indexes.IVFQueryOptions
+- fullName: langchain_google_alloydb_pg.indexes.QueryOptions
+  isExternal: false
+  name: QueryOptions
+  parent: langchain_google_alloydb_pg.indexes
+  uid: langchain_google_alloydb_pg.indexes.QueryOptions
+- fullName: langchain_google_alloydb_pg.indexes.ScaNNIndex
+  isExternal: false
+  name: ScaNNIndex
+  parent: langchain_google_alloydb_pg.indexes
+  uid: langchain_google_alloydb_pg.indexes.ScaNNIndex
+- fullName: langchain_google_alloydb_pg.indexes.StrategyMixin
+  isExternal: false
+  name: StrategyMixin
+  parent: langchain_google_alloydb_pg.indexes
+  uid: langchain_google_alloydb_pg.indexes.StrategyMixin

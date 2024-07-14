@@ -1,0 +1,26 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- attributes: []
+  children: []
+  class: langchain_google_alloydb_pg.indexes.QueryOptions
+  enum: []
+  fullName: langchain_google_alloydb_pg.indexes.QueryOptions
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.indexes
+  name: QueryOptions
+  source:
+    id: QueryOptions
+    path: src/langchain_google_alloydb_pg/indexes.py
+    startLine: 72
+  summary: 'QueryOptions()
+
+
+    '
+  syntax:
+    content: QueryOptions()
+    parameters: []
+  type: class
+  uid: langchain_google_alloydb_pg.indexes.QueryOptions
+references: []

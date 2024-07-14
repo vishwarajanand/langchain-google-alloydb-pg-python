@@ -1,0 +1,269 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>langchain_google_alloydb_pg.chat_message_history &#8212; langchain-google-alloydb-pg  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+          	<div class="admonition" id="python2-eol"> 
+          	 As of January 1, 2020 this library no longer supports Python 2 on the latest released version. 
+          	 Library versions released prior to that date will continue to be available. For more information please
+          	 visit <a href="https://cloud.google.com/python/docs/python2-sunset/">Python 2 support on Google Cloud</a>.
+          	</div>
+            
+  <h1>Source code for langchain_google_alloydb_pg.chat_message_history</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2024 Google LLC</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">from</span> <span class="nn">langchain_core.chat_history</span> <span class="kn">import</span> <span class="n">BaseChatMessageHistory</span>
+<span class="kn">from</span> <span class="nn">langchain_core.messages</span> <span class="kn">import</span> <span class="n">BaseMessage</span><span class="p">,</span> <span class="n">messages_from_dict</span>
+
+<span class="kn">from</span> <span class="nn">.engine</span> <span class="kn">import</span> <span class="n">AlloyDBEngine</span>
+
+
+<div class="viewcode-block" id="_aget_messages"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/history.html#langchain_google_alloydb_pg.chat_message_history._aget_messages">[docs]</a><span class="k">async</span> <span class="k">def</span> <span class="nf">_aget_messages</span><span class="p">(</span>
+    <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseMessage</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve the messages from AlloyDB&quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;SELECT data, type FROM &quot;</span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s2">&quot; WHERE session_id = :session_id ORDER BY id;&quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">engine</span><span class="o">.</span><span class="n">_afetch</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="n">session_id</span><span class="p">})</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">results</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="n">items</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">],</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]}</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+    <span class="n">messages</span> <span class="o">=</span> <span class="n">messages_from_dict</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">messages</span></div>
+
+
+<div class="viewcode-block" id="AlloyDBChatMessageHistory"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/history.html#langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory">[docs]</a><span class="k">class</span> <span class="nc">AlloyDBChatMessageHistory</span><span class="p">(</span><span class="n">BaseChatMessageHistory</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Chat message history stored in an AlloyDB.&quot;&quot;&quot;</span>
+
+    <span class="n">__create_key</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseMessage</span><span class="p">],</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="n">AlloyDBChatMessageHistory</span><span class="o">.</span><span class="n">__create_key</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;Only create class through &#39;create&#39; or &#39;create_sync&#39; methods!&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="n">session_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span> <span class="o">=</span> <span class="n">table_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messages</span> <span class="o">=</span> <span class="n">messages</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">create</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBChatMessageHistory</span><span class="p">:</span>
+        <span class="n">table_schema</span> <span class="o">=</span> <span class="k">await</span> <span class="n">engine</span><span class="o">.</span><span class="n">_aload_table_schema</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="n">column_names</span> <span class="o">=</span> <span class="n">table_schema</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+        <span class="n">required_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;session_id&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">all</span><span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">column_names</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">required_columns</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Table &#39;</span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s2">&#39; has incorrect schema. Got &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;column names &#39;</span><span class="si">{</span><span class="n">column_names</span><span class="si">}</span><span class="s2">&#39; but required column names &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">required_columns</span><span class="si">}</span><span class="s2">&#39;.</span><span class="se">\n</span><span class="s2">Please create table with following schema:&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">CREATE TABLE </span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s2"> (&quot;</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    id INT AUTO_INCREMENT PRIMARY KEY,&quot;</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    session_id TEXT NOT NULL,&quot;</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    data JSON NOT NULL,&quot;</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    type TEXT NOT NULL&quot;</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">);&quot;</span>
+            <span class="p">)</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_aget_messages</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">table_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__create_key</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">messages</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_sync</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBChatMessageHistory</span><span class="p">:</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">table_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AlloyDBChatMessageHistory.aadd_message"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/history.html#langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_message">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">aadd_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">BaseMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Append the message to the record in AlloyDB&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;INSERT INTO &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="si">}</span><span class="s2">&quot;(session_id, data, type)</span>
+<span class="s2">                    VALUES (:session_id, :data, :type);</span>
+<span class="s2">                &quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span>
+            <span class="n">query</span><span class="p">,</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span>
+                <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">dict</span><span class="p">()),</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">message</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messages</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_aget_messages</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlloyDBChatMessageHistory.add_message"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/history.html#langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_message">[docs]</a>    <span class="k">def</span> <span class="nf">add_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">BaseMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aadd_message</span><span class="p">(</span><span class="n">message</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="AlloyDBChatMessageHistory.aadd_messages"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/history.html#langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_messages">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">aadd_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">BaseMessage</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">aadd_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlloyDBChatMessageHistory.add_messages"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/history.html#langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_messages">[docs]</a>    <span class="k">def</span> <span class="nf">add_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">BaseMessage</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aadd_messages</span><span class="p">(</span><span class="n">messages</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="AlloyDBChatMessageHistory.aclear"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/history.html#langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aclear">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">aclear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear session memory from AlloyDB&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;DELETE FROM &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="si">}</span><span class="s2">&quot; WHERE session_id = :session_id;&quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="AlloyDBChatMessageHistory.clear"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/history.html#langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aclear</span><span class="p">())</span></div>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">async_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messages</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_aget_messages</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">sync_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">async_messages</span><span class="p">())</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">langchain-google-alloydb-pg</a></h1>
+
+
+
+<p class="blurb">Google Cloud Client Libraries for langchain-google-alloydb-pg</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=googleapis&repo=langchain-google-alloydb-pg-python&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/engine.html">Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/vectorstore.html">Vector Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/loader.html">Document Loader</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/history.html">Chat Message History</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Google.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 4.5.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/googleapis/langchain-google-alloydb-pg-python" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

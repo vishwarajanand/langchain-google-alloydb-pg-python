@@ -1,0 +1,81 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- children:
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  - langchain_google_alloydb_pg.vectorstore.cosine_similarity
+  - langchain_google_alloydb_pg.vectorstore.maximal_marginal_relevance
+  fullName: langchain_google_alloydb_pg.vectorstore
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: vectorstore
+  source:
+    id: vectorstore
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 0
+  summary: API documentation for `vectorstore` module.
+  syntax: {}
+  type: module
+  uid: langchain_google_alloydb_pg.vectorstore
+- attributes: []
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.cosine_similarity
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: cosine_similarity
+  source:
+    id: cosine_similarity
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 832
+  summary: 'Row-wise cosine similarity between two equal-width matrices.
+
+
+    '
+  syntax:
+    content: "cosine_similarity(\n    X: typing.Union[\n        typing.List[typing.List[float]],\
+      \ typing.List[numpy.ndarray], numpy.ndarray\n    ],\n    Y: typing.Union[\n\
+      \        typing.List[typing.List[float]], typing.List[numpy.ndarray], numpy.ndarray\n\
+      \    ],\n) -> numpy.ndarray"
+    parameters: []
+  type: function
+  uid: langchain_google_alloydb_pg.vectorstore.cosine_similarity
+- attributes: []
+  enum: []
+  fullName: langchain_google_alloydb_pg.vectorstore.maximal_marginal_relevance
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.vectorstore
+  name: maximal_marginal_relevance
+  source:
+    id: maximal_marginal_relevance
+    path: src/langchain_google_alloydb_pg/vectorstore.py
+    startLine: 798
+  summary: 'Calculate maximal marginal relevance.
+
+
+    '
+  syntax:
+    content: "maximal_marginal_relevance(\n    query_embedding: numpy.ndarray,\n \
+      \   embedding_list: list,\n    lambda_mult: float = 0.5,\n    k: int = 4,\n\
+      ) -> typing.List[int]"
+    parameters: []
+  type: function
+  uid: langchain_google_alloydb_pg.vectorstore.maximal_marginal_relevance
+references:
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+  isExternal: false
+  name: AlloyDBVectorStore
+  parent: langchain_google_alloydb_pg.vectorstore
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore
+- fullName: langchain_google_alloydb_pg.vectorstore.cosine_similarity
+  isExternal: false
+  name: cosine_similarity
+  parent: langchain_google_alloydb_pg.vectorstore
+  uid: langchain_google_alloydb_pg.vectorstore.cosine_similarity
+- fullName: langchain_google_alloydb_pg.vectorstore.maximal_marginal_relevance
+  isExternal: false
+  name: maximal_marginal_relevance
+  parent: langchain_google_alloydb_pg.vectorstore
+  uid: langchain_google_alloydb_pg.vectorstore.maximal_marginal_relevance

@@ -1,0 +1,207 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- attributes: []
+  children:
+  - langchain_google_alloydb_pg.loader.AlloyDBLoader.alazy_load
+  - langchain_google_alloydb_pg.loader.AlloyDBLoader.aload
+  - langchain_google_alloydb_pg.loader.AlloyDBLoader.create
+  - langchain_google_alloydb_pg.loader.AlloyDBLoader.lazy_load
+  - langchain_google_alloydb_pg.loader.AlloyDBLoader.load
+  class: langchain_google_alloydb_pg.loader.AlloyDBLoader
+  enum: []
+  fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.loader
+  name: AlloyDBLoader
+  source:
+    id: AlloyDBLoader
+    path: src/langchain_google_alloydb_pg/loader.py
+    startLine: 101
+  summary: 'Load documents from AlloyDB`.
+
+
+    Each document represents one row of the result. The `content_columns` are
+
+    written into the `content_columns` of the document. The `metadata_columns` are
+    written
+
+    into the `metadata_columns` of the document. By default, first columns is written
+    into
+
+    the `page_content` and everything else into the `metadata`.
+
+
+    '
+  syntax:
+    content: "AlloyDBLoader(\n    key: object,\n    engine: langchain_google_alloydb_pg.engine.AlloyDBEngine,\n\
+      \    query: str,\n    content_columns: typing.List[str],\n    metadata_columns:\
+      \ typing.List[str],\n    formatter: typing.Callable[\n        [typing.Dict[str,\
+      \ typing.Any], typing.Iterable[str]], str\n    ],\n    metadata_json_column:\
+      \ typing.Optional[str] = None,\n)"
+    parameters: []
+  type: class
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader
+- attributes: []
+  class: langchain_google_alloydb_pg.loader.AlloyDBLoader
+  enum: []
+  fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.alazy_load
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.loader
+  name: alazy_load
+  source:
+    id: alazy_load
+    path: src/langchain_google_alloydb_pg/loader.py
+    startLine: 273
+  summary: 'Load AlloyDB data into Document objects lazily.
+
+
+    '
+  syntax:
+    content: alazy_load() -> typing.AsyncIterator[langchain_core.documents.base.Document]
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.alazy_load
+- attributes: []
+  class: langchain_google_alloydb_pg.loader.AlloyDBLoader
+  enum: []
+  fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.aload
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.loader
+  name: aload
+  source:
+    id: aload
+    path: src/langchain_google_alloydb_pg/loader.py
+    startLine: 263
+  summary: 'Load AlloyDB data into Document objects.
+
+
+    '
+  syntax:
+    content: aload() -> typing.List[langchain_core.documents.base.Document]
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.aload
+- attributes: []
+  class: langchain_google_alloydb_pg.loader.AlloyDBLoader
+  enum: []
+  fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.create
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.loader
+  name: create
+  source:
+    id: create
+    path: src/langchain_google_alloydb_pg/loader.py
+    startLine: 134
+  summary: 'Constructor for AlloyDBLoader
+
+    '
+  syntax:
+    content: "create(\n    engine: langchain_google_alloydb_pg.engine.AlloyDBEngine,\n\
+      \    query: typing.Optional[str] = None,\n    table_name: typing.Optional[str]\
+      \ = None,\n    content_columns: typing.Optional[typing.List[str]] = None,\n\
+      \    metadata_columns: typing.Optional[typing.List[str]] = None,\n    metadata_json_column:\
+      \ typing.Optional[str] = None,\n    format: typing.Optional[str] = None,\n \
+      \   formatter: typing.Optional[typing.Callable] = None,\n) -> langchain_google_alloydb_pg.loader.AlloyDBLoader"
+    parameters:
+    - description: AsyncEngine with pool connection to the postgres database
+      id: engine
+      var_type: AlloyDBEngine
+    - description: SQL query. Defaults to None.
+      id: query
+      var_type: Optional[str], optional
+    - description: Name of table to query. Defaults to None.
+      id: table_name
+      var_type: Optional[str], optional
+    - description: Column that represent a Document's page_content. Defaults to the
+        first column.
+      id: content_columns
+      var_type: Optional[List[str]], optional
+    - description: Column(s) that represent a Document's metadata.. Defaults to None.
+      id: metadata_columns
+      var_type: Optional[List[str]], optional
+    - description: Column to store metadata as JSON. Defaults to "langchain_metadata".
+      id: metadata_json_column
+      var_type: Optional[str], optional
+    - description: 'Format of page content (OneOf: text, csv, YAML, JSON). Defaults
+        to ''text''.'
+      id: format
+      var_type: Optional[str], optional
+    - description: 'A function to format page content (OneOf: format, formatter).
+        Defaults to None.'
+      id: formatter
+      var_type: Optional[Callable], optional
+  type: method
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.create
+- attributes: []
+  class: langchain_google_alloydb_pg.loader.AlloyDBLoader
+  enum: []
+  fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.lazy_load
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.loader
+  name: lazy_load
+  source:
+    id: lazy_load
+    path: src/langchain_google_alloydb_pg/loader.py
+    startLine: 267
+  summary: 'Load AlloyDB data into Document objects lazily.
+
+
+    '
+  syntax:
+    content: lazy_load() -> typing.Iterator[langchain_core.documents.base.Document]
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.lazy_load
+- attributes: []
+  class: langchain_google_alloydb_pg.loader.AlloyDBLoader
+  enum: []
+  fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.load
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.loader
+  name: load
+  source:
+    id: load
+    path: src/langchain_google_alloydb_pg/loader.py
+    startLine: 256
+  summary: 'Load AlloyDB data into Document objects.
+
+
+    '
+  syntax:
+    content: load() -> typing.List[langchain_core.documents.base.Document]
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.load
+references:
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.alazy_load
+  isExternal: false
+  name: alazy_load
+  parent: langchain_google_alloydb_pg.loader.AlloyDBLoader
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.alazy_load
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.aload
+  isExternal: false
+  name: aload
+  parent: langchain_google_alloydb_pg.loader.AlloyDBLoader
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.aload
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.create
+  isExternal: false
+  name: create
+  parent: langchain_google_alloydb_pg.loader.AlloyDBLoader
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.create
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.lazy_load
+  isExternal: false
+  name: lazy_load
+  parent: langchain_google_alloydb_pg.loader.AlloyDBLoader
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.lazy_load
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.load
+  isExternal: false
+  name: load
+  parent: langchain_google_alloydb_pg.loader.AlloyDBLoader
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.load

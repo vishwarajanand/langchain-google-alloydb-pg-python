@@ -1,0 +1,30 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- children:
+  - langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver
+  - langchain_google_alloydb_pg.loader.AlloyDBLoader
+  fullName: langchain_google_alloydb_pg.loader
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.loader
+  name: loader
+  source:
+    id: loader
+    path: src/langchain_google_alloydb_pg/loader.py
+    startLine: 0
+  summary: API documentation for `loader` module.
+  syntax: {}
+  type: module
+  uid: langchain_google_alloydb_pg.loader
+references:
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver
+  isExternal: false
+  name: AlloyDBDocumentSaver
+  parent: langchain_google_alloydb_pg.loader
+  uid: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader
+  isExternal: false
+  name: AlloyDBLoader
+  parent: langchain_google_alloydb_pg.loader
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader

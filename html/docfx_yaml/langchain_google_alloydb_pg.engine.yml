@@ -1,0 +1,67 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- children:
+  - langchain_google_alloydb_pg.engine.AlloyDBEngine
+  - langchain_google_alloydb_pg.engine.Column
+  - langchain_google_alloydb_pg.engine._get_iam_principal_email
+  fullName: langchain_google_alloydb_pg.engine
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.engine
+  name: engine
+  source:
+    id: engine
+    path: src/langchain_google_alloydb_pg/engine.py
+    startLine: 0
+  summary: API documentation for `engine` module.
+  syntax: {}
+  type: module
+  uid: langchain_google_alloydb_pg.engine
+- attributes: []
+  enum: []
+  fullName: langchain_google_alloydb_pg.engine._get_iam_principal_email
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.engine
+  name: _get_iam_principal_email
+  source:
+    id: _get_iam_principal_email
+    path: src/langchain_google_alloydb_pg/engine.py
+    startLine: 51
+  summary: 'Get email address associated with current authenticated IAM principal.
+
+
+    Email will be used for automatic IAM database authentication to AlloyDB.
+
+    '
+  syntax:
+    content: '_get_iam_principal_email(credentials: google.auth.credentials.Credentials)
+      -> str'
+    parameters:
+    - description: The credentials object to use in finding the associated IAM principal
+        email address.
+      id: credentials
+      var_type: google.auth.credentials.Credentials
+    returns:
+    - description: The email address associated with the current authenticated IAM
+        principal.
+      var_type: email (str)
+  type: function
+  uid: langchain_google_alloydb_pg.engine._get_iam_principal_email
+references:
+- fullName: langchain_google_alloydb_pg.engine.AlloyDBEngine
+  isExternal: false
+  name: AlloyDBEngine
+  parent: langchain_google_alloydb_pg.engine
+  uid: langchain_google_alloydb_pg.engine.AlloyDBEngine
+- fullName: langchain_google_alloydb_pg.engine.Column
+  isExternal: false
+  name: Column
+  parent: langchain_google_alloydb_pg.engine
+  uid: langchain_google_alloydb_pg.engine.Column
+- fullName: langchain_google_alloydb_pg.engine._get_iam_principal_email
+  isExternal: false
+  name: _get_iam_principal_email
+  parent: langchain_google_alloydb_pg.engine
+  uid: langchain_google_alloydb_pg.engine._get_iam_principal_email

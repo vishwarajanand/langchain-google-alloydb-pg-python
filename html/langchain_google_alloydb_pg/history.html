@@ -1,0 +1,204 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Chat Message History &#8212; langchain-google-alloydb-pg  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Changelog" href="../changelog.html" />
+    <link rel="prev" title="Document Loader" href="loader.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+          	<div class="admonition" id="python2-eol"> 
+          	 As of January 1, 2020 this library no longer supports Python 2 on the latest released version. 
+          	 Library versions released prior to that date will continue to be available. For more information please
+          	 visit <a href="https://cloud.google.com/python/docs/python2-sunset/">Python 2 support on Google Cloud</a>.
+          	</div>
+            
+  <section id="chat-message-history">
+<h1>Chat Message History<a class="headerlink" href="#chat-message-history" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">langchain_google_alloydb_pg.chat_message_history.</span></span><span class="sig-name descname"><span class="pre">AlloyDBChatMessageHistory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.chat_message_history.object.html"><span class="pre">object</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.engine.AlloyDBEngine.html"><span class="pre">langchain_google_alloydb_pg.engine.AlloyDBEngine</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.chat_message_history.str.html"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.chat_message_history.str.html"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">messages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.List.html"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_core.messages.base.BaseMessage.html"><span class="pre">langchain_core.messages.base.BaseMessage</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/chat_message_history.html#AlloyDBChatMessageHistory"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Chat message history stored in an AlloyDB.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aadd_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_core.messages.base.BaseMessage.html"><span class="pre">langchain_core.messages.base.BaseMessage</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../None.html"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/chat_message_history.html#AlloyDBChatMessageHistory.aadd_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Append the message to the record in AlloyDB</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aadd_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">messages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.Sequence.html"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_core.messages.base.BaseMessage.html"><span class="pre">langchain_core.messages.base.BaseMessage</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../None.html"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/chat_message_history.html#AlloyDBChatMessageHistory.aadd_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Async add a list of messages.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>messages</strong> – A sequence of BaseMessage objects to store.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aclear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../None.html"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/chat_message_history.html#AlloyDBChatMessageHistory.aclear"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Clear session memory from AlloyDB</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_core.messages.base.BaseMessage.html"><span class="pre">langchain_core.messages.base.BaseMessage</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../None.html"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/chat_message_history.html#AlloyDBChatMessageHistory.add_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Add a Message object to the store.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>message</strong> – A BaseMessage object to store.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="../NotImplementedError.html"><strong>NotImplementedError</strong></a> – If the sub-class has not implemented an efficient
+    add_messages method.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">add_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">messages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.Sequence.html"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_core.messages.base.BaseMessage.html"><span class="pre">langchain_core.messages.base.BaseMessage</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../None.html"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/chat_message_history.html#AlloyDBChatMessageHistory.add_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Add a list of messages.</p>
+<p>Implementations should over-ride this method to handle bulk addition of messages
+in an efficient manner to avoid unnecessary round-trips to the underlying store.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>messages</strong> – A sequence of BaseMessage objects to store.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../None.html"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/chat_message_history.html#AlloyDBChatMessageHistory.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Remove all messages from the store</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">langchain_google_alloydb_pg.chat_message_history.</span></span><span class="sig-name descname"><span class="pre">_aget_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.engine.AlloyDBEngine.html"><span class="pre">langchain_google_alloydb_pg.engine.AlloyDBEngine</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.chat_message_history.str.html"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.chat_message_history.str.html"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../typing.List.html"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_core.messages.base.BaseMessage.html"><span class="pre">langchain_core.messages.base.BaseMessage</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/chat_message_history.html#_aget_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Retrieve the messages from AlloyDB</p>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">langchain-google-alloydb-pg</a></h1>
+
+
+
+<p class="blurb">Google Cloud Client Libraries for langchain-google-alloydb-pg</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=googleapis&repo=langchain-google-alloydb-pg-python&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="engine.html">Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vectorstore.html">Vector Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loader.html">Document Loader</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Chat Message History</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="loader.html" title="previous chapter">Document Loader</a></li>
+      <li>Next: <a href="../changelog.html" title="next chapter">Changelog</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Google.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 4.5.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../_sources/langchain_google_alloydb_pg/history.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/googleapis/langchain-google-alloydb-pg-python" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

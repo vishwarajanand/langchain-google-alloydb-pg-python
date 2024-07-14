@@ -1,0 +1,198 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- attributes: []
+  children:
+  - langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_message
+  - langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_messages
+  - langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aclear
+  - langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_message
+  - langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_messages
+  - langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.clear
+  class: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  enum: []
+  fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.chat_message_history
+  name: AlloyDBChatMessageHistory
+  source:
+    id: AlloyDBChatMessageHistory
+    path: src/langchain_google_alloydb_pg/chat_message_history.py
+    startLine: 41
+  summary: 'Chat message history stored in an AlloyDB.
+
+
+    '
+  syntax:
+    content: "AlloyDBChatMessageHistory(\n    key: object,\n    engine: langchain_google_alloydb_pg.engine.AlloyDBEngine,\n\
+      \    session_id: str,\n    table_name: str,\n    messages: typing.List[langchain_core.messages.base.BaseMessage],\n\
+      )"
+    parameters: []
+  type: class
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+- attributes: []
+  class: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  enum: []
+  fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_message
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.chat_message_history
+  name: aadd_message
+  source:
+    id: aadd_message
+    path: src/langchain_google_alloydb_pg/chat_message_history.py
+    startLine: 100
+  summary: 'Append the message to the record in AlloyDB
+
+
+    '
+  syntax:
+    content: 'aadd_message(message: langchain_core.messages.base.BaseMessage) -> None'
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_message
+- attributes: []
+  class: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  enum: []
+  fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_messages
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.chat_message_history
+  name: aadd_messages
+  source:
+    id: aadd_messages
+    path: src/langchain_google_alloydb_pg/chat_message_history.py
+    startLine: 120
+  summary: 'Async add a list of messages.
+
+    '
+  syntax:
+    content: "aadd_messages(\n    messages: typing.Sequence[langchain_core.messages.base.BaseMessage],\n\
+      ) -> None"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_messages
+- attributes: []
+  class: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  enum: []
+  fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aclear
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.chat_message_history
+  name: aclear
+  source:
+    id: aclear
+    path: src/langchain_google_alloydb_pg/chat_message_history.py
+    startLine: 127
+  summary: 'Clear session memory from AlloyDB
+
+
+    '
+  syntax:
+    content: aclear() -> None
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aclear
+- attributes: []
+  class: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  enum: []
+  fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_message
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.chat_message_history
+  name: add_message
+  source:
+    id: add_message
+    path: src/langchain_google_alloydb_pg/chat_message_history.py
+    startLine: 117
+  summary: 'Add a Message object to the store.
+
+    '
+  syntax:
+    content: 'add_message(message: langchain_core.messages.base.BaseMessage) -> None'
+    exceptions:
+    - description: If the sub-class has not implemented an efficient add_messages
+        method.
+      var_type: NotImplementedError
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_message
+- attributes: []
+  class: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  enum: []
+  fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_messages
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.chat_message_history
+  name: add_messages
+  source:
+    id: add_messages
+    path: src/langchain_google_alloydb_pg/chat_message_history.py
+    startLine: 124
+  summary: 'Add a list of messages.
+
+
+    Implementations should over-ride this method to handle bulk addition of messages
+
+    in an efficient manner to avoid unnecessary round-trips to the underlying store.
+
+    '
+  syntax:
+    content: "add_messages(\n    messages: typing.Sequence[langchain_core.messages.base.BaseMessage],\n\
+      ) -> None"
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_messages
+- attributes: []
+  class: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  enum: []
+  fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.clear
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.chat_message_history
+  name: clear
+  source:
+    id: clear
+    path: src/langchain_google_alloydb_pg/chat_message_history.py
+    startLine: 133
+  summary: 'Remove all messages from the store
+
+
+    '
+  syntax:
+    content: clear() -> None
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.clear
+references:
+- fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_message
+  isExternal: false
+  name: aadd_message
+  parent: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_message
+- fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_messages
+  isExternal: false
+  name: aadd_messages
+  parent: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_messages
+- fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aclear
+  isExternal: false
+  name: aclear
+  parent: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aclear
+- fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_message
+  isExternal: false
+  name: add_message
+  parent: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_message
+- fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_messages
+  isExternal: false
+  name: add_messages
+  parent: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_messages
+- fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.clear
+  isExternal: false
+  name: clear
+  parent: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.clear

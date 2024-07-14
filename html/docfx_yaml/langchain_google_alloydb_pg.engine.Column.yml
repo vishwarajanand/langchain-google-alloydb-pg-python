@@ -1,0 +1,26 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- attributes: []
+  children: []
+  class: langchain_google_alloydb_pg.engine.Column
+  enum: []
+  fullName: langchain_google_alloydb_pg.engine.Column
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.engine
+  name: Column
+  source:
+    id: Column
+    path: src/langchain_google_alloydb_pg/engine.py
+    startLine: 88
+  summary: 'Column(name: ''str'', data_type: ''str'', nullable: ''bool'' = True)
+
+
+    '
+  syntax:
+    content: 'Column(name: "str", data_type: "str", nullable: "bool" = True)'
+    parameters: []
+  type: class
+  uid: langchain_google_alloydb_pg.engine.Column
+references: []

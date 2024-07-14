@@ -1,0 +1,150 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- attributes: []
+  children:
+  - langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute
+  - langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute_outside_tx
+  - langchain_google_alloydb_pg.engine.AlloyDBEngine._aload_table_schema
+  - langchain_google_alloydb_pg.engine.AlloyDBEngine.ainit_document_table
+  class: langchain_google_alloydb_pg.engine.AlloyDBEngine
+  enum: []
+  fullName: langchain_google_alloydb_pg.engine.AlloyDBEngine
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.engine
+  name: AlloyDBEngine
+  source:
+    id: AlloyDBEngine
+    path: src/langchain_google_alloydb_pg/engine.py
+    startLine: 101
+  summary: 'A class for managing connections to a AlloyDB database.
+
+
+    '
+  syntax:
+    content: "AlloyDBEngine(\n    engine: sqlalchemy.ext.asyncio.engine.AsyncEngine,\n\
+      \    loop: typing.Optional[asyncio.events.AbstractEventLoop],\n    thread: typing.Optional[threading.Thread],\n\
+      )"
+    parameters: []
+  type: class
+  uid: langchain_google_alloydb_pg.engine.AlloyDBEngine
+- attributes: []
+  class: langchain_google_alloydb_pg.engine.AlloyDBEngine
+  enum: []
+  fullName: langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.engine
+  name: _aexecute
+  source:
+    id: _aexecute
+    path: src/langchain_google_alloydb_pg/engine.py
+    startLine: 233
+  summary: 'Execute a SQL query.
+
+
+    '
+  syntax:
+    content: '_aexecute(query: str, params: typing.Optional[dict] = None) -> None'
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute
+- attributes: []
+  class: langchain_google_alloydb_pg.engine.AlloyDBEngine
+  enum: []
+  fullName: langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute_outside_tx
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.engine
+  name: _aexecute_outside_tx
+  source:
+    id: _aexecute_outside_tx
+    path: src/langchain_google_alloydb_pg/engine.py
+    startLine: 239
+  summary: 'Execute a SQL query.
+
+
+    '
+  syntax:
+    content: '_aexecute_outside_tx(query: str) -> None'
+    parameters: []
+  type: method
+  uid: langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute_outside_tx
+- attributes: []
+  class: langchain_google_alloydb_pg.engine.AlloyDBEngine
+  enum: []
+  fullName: langchain_google_alloydb_pg.engine.AlloyDBEngine._aload_table_schema
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.engine
+  name: _aload_table_schema
+  source:
+    id: _aload_table_schema
+    path: src/langchain_google_alloydb_pg/engine.py
+    startLine: 388
+  summary: 'Load table schema from existing table in PgSQL database.
+
+    '
+  syntax:
+    content: '_aload_table_schema(table_name: str) -> sqlalchemy.sql.schema.Table'
+    parameters: []
+    returns:
+    - description: The loaded table.
+      var_type: (sqlalchemy.Table)
+  type: method
+  uid: langchain_google_alloydb_pg.engine.AlloyDBEngine._aload_table_schema
+- attributes: []
+  class: langchain_google_alloydb_pg.engine.AlloyDBEngine
+  enum: []
+  fullName: langchain_google_alloydb_pg.engine.AlloyDBEngine.ainit_document_table
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.engine
+  name: ainit_document_table
+  source:
+    id: ainit_document_table
+    path: src/langchain_google_alloydb_pg/engine.py
+    startLine: 339
+  summary: 'Create a table for saving of langchain documents.
+
+    '
+  syntax:
+    content: "ainit_document_table(\n    table_name: str,\n    content_column: str\
+      \ = \"page_content\",\n    metadata_columns: typing.List[langchain_google_alloydb_pg.engine.Column]\
+      \ = [],\n    metadata_json_column: str = \"langchain_metadata\",\n    store_metadata:\
+      \ bool = True,\n) -> None"
+    parameters:
+    - description: The PgSQL database table name.
+      id: table_name
+      var_type: str
+    - description: A list of Columns to create for custom metadata. Optional.
+      id: metadata_columns
+      var_type: List[Column]
+    - description: 'Whether to store extra metadata in a metadata column if not described
+        in ''metadata'' field list (Default: True).'
+      id: store_metadata
+      var_type: bool
+  type: method
+  uid: langchain_google_alloydb_pg.engine.AlloyDBEngine.ainit_document_table
+references:
+- fullName: langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute
+  isExternal: false
+  name: _aexecute
+  parent: langchain_google_alloydb_pg.engine.AlloyDBEngine
+  uid: langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute
+- fullName: langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute_outside_tx
+  isExternal: false
+  name: _aexecute_outside_tx
+  parent: langchain_google_alloydb_pg.engine.AlloyDBEngine
+  uid: langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute_outside_tx
+- fullName: langchain_google_alloydb_pg.engine.AlloyDBEngine._aload_table_schema
+  isExternal: false
+  name: _aload_table_schema
+  parent: langchain_google_alloydb_pg.engine.AlloyDBEngine
+  uid: langchain_google_alloydb_pg.engine.AlloyDBEngine._aload_table_schema
+- fullName: langchain_google_alloydb_pg.engine.AlloyDBEngine.ainit_document_table
+  isExternal: false
+  name: ainit_document_table
+  parent: langchain_google_alloydb_pg.engine.AlloyDBEngine
+  uid: langchain_google_alloydb_pg.engine.AlloyDBEngine.ainit_document_table

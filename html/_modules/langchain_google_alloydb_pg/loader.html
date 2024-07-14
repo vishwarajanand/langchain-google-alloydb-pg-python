@@ -1,0 +1,599 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>langchain_google_alloydb_pg.loader &#8212; langchain-google-alloydb-pg  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+          	<div class="admonition" id="python2-eol"> 
+          	 As of January 1, 2020 this library no longer supports Python 2 on the latest released version. 
+          	 Library versions released prior to that date will continue to be available. For more information please
+          	 visit <a href="https://cloud.google.com/python/docs/python2-sunset/">Python 2 support on Google Cloud</a>.
+          	</div>
+            
+  <h1>Source code for langchain_google_alloydb_pg.loader</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2024 Google LLC</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">AsyncIterator</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+    <span class="n">Iterator</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">sqlalchemy</span>
+<span class="kn">from</span> <span class="nn">langchain_core.document_loaders.base</span> <span class="kn">import</span> <span class="n">BaseLoader</span>
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+
+<span class="kn">from</span> <span class="nn">.engine</span> <span class="kn">import</span> <span class="n">AlloyDBEngine</span>
+
+<span class="n">DEFAULT_CONTENT_COL</span> <span class="o">=</span> <span class="s2">&quot;page_content&quot;</span>
+<span class="n">DEFAULT_METADATA_COL</span> <span class="o">=</span> <span class="s2">&quot;langchain_metadata&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">text_formatter</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">content_columns</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">])</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">content_columns</span> <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">row</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">csv_formatter</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">content_columns</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">])</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">content_columns</span> <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">row</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">yaml_formatter</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">content_columns</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">content_columns</span> <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">row</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">json_formatter</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">content_columns</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">dictionary</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">content_columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">dictionary</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_doc_from_row</span><span class="p">(</span>
+    <span class="n">content_columns</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">row</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">metadata_json_column</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_METADATA_COL</span><span class="p">,</span>
+    <span class="n">formatter</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">text_formatter</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+    <span class="n">page_content</span> <span class="o">=</span> <span class="n">formatter</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">content_columns</span><span class="p">)</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># unnest metadata from langchain_metadata column</span>
+    <span class="k">if</span> <span class="n">metadata_json_column</span> <span class="ow">and</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metadata_json_column</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="n">metadata_json_column</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="c1"># load metadata from other columns</span>
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">metadata_columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">row</span> <span class="ow">and</span> <span class="n">column</span> <span class="o">!=</span> <span class="n">metadata_json_column</span><span class="p">:</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">Document</span><span class="p">(</span><span class="n">page_content</span><span class="o">=</span><span class="n">page_content</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_row_from_doc</span><span class="p">(</span>
+    <span class="n">doc</span><span class="p">:</span> <span class="n">Document</span><span class="p">,</span>
+    <span class="n">column_names</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_CONTENT_COL</span><span class="p">,</span>
+    <span class="n">metadata_json_column</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_METADATA_COL</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="n">doc_metadata</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">row</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">content_column</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">page_content</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+            <span class="n">row</span><span class="p">[</span><span class="n">entry</span><span class="p">]</span> <span class="o">=</span> <span class="n">doc_metadata</span><span class="p">[</span><span class="n">entry</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">doc_metadata</span><span class="p">[</span><span class="n">entry</span><span class="p">]</span>
+    <span class="c1"># store extra metadata in langchain_metadata column in json format</span>
+    <span class="k">if</span> <span class="n">metadata_json_column</span><span class="p">:</span>
+        <span class="n">row</span><span class="p">[</span><span class="n">metadata_json_column</span><span class="p">]</span> <span class="o">=</span> <span class="n">doc_metadata</span>
+    <span class="k">return</span> <span class="n">row</span>
+
+
+<div class="viewcode-block" id="AlloyDBLoader"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/loader.html#langchain_google_alloydb_pg.loader.AlloyDBLoader">[docs]</a><span class="k">class</span> <span class="nc">AlloyDBLoader</span><span class="p">(</span><span class="n">BaseLoader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load documents from AlloyDB`.</span>
+
+<span class="sd">    Each document represents one row of the result. The `content_columns` are</span>
+<span class="sd">    written into the `content_columns` of the document. The `metadata_columns` are written</span>
+<span class="sd">    into the `metadata_columns` of the document. By default, first columns is written into</span>
+<span class="sd">    the `page_content` and everything else into the `metadata`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">__create_key</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">content_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">formatter</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="n">AlloyDBLoader</span><span class="o">.</span><span class="n">__create_key</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;Only create class through &#39;create&#39; or &#39;create_sync&#39; methods!&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query</span> <span class="o">=</span> <span class="n">query</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">content_columns</span> <span class="o">=</span> <span class="n">content_columns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata_columns</span> <span class="o">=</span> <span class="n">metadata_columns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">formatter</span> <span class="o">=</span> <span class="n">formatter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span> <span class="o">=</span> <span class="n">metadata_json_column</span>
+
+<div class="viewcode-block" id="AlloyDBLoader.create"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/loader.html#langchain_google_alloydb_pg.loader.AlloyDBLoader.create">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">create</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AlloyDBLoader</span><span class="p">],</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">content_columns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">format</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">formatter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBLoader</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for AlloyDBLoader</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            engine (AlloyDBEngine):AsyncEngine with pool connection to the postgres database</span>
+<span class="sd">            query (Optional[str], optional): SQL query. Defaults to None.</span>
+<span class="sd">            table_name (Optional[str], optional): Name of table to query. Defaults to None.</span>
+<span class="sd">            content_columns (Optional[List[str]], optional): Column that represent a Document&#39;s page_content. Defaults to the first column.</span>
+<span class="sd">            metadata_columns (Optional[List[str]], optional): Column(s) that represent a Document&#39;s metadata.. Defaults to None.</span>
+<span class="sd">            metadata_json_column (Optional[str], optional): Column to store metadata as JSON. Defaults to &quot;langchain_metadata&quot;.</span>
+<span class="sd">            format (Optional[str], optional): Format of page content (OneOf: text, csv, YAML, JSON). Defaults to &#39;text&#39;.</span>
+<span class="sd">            formatter (Optional[Callable], optional): A function to format page content (OneOf: format, formatter). Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            AlloyDBLoader</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">table_name</span> <span class="ow">and</span> <span class="n">query</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only one of &#39;table_name&#39; or &#39;query&#39; should be specified.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">table_name</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">query</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;At least one of the parameters &#39;table_name&#39; or &#39;query&#39; needs to be provided&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">format</span> <span class="ow">and</span> <span class="n">formatter</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only one of &#39;format&#39; or &#39;formatter&#39; should be specified.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">format</span> <span class="ow">and</span> <span class="nb">format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;JSON&quot;</span><span class="p">,</span> <span class="s2">&quot;YAML&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;format must be type: &#39;csv&#39;, &#39;text&#39;, &#39;JSON&#39;, &#39;YAML&#39;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">formatter</span><span class="p">:</span>
+            <span class="n">formatter</span> <span class="o">=</span> <span class="n">formatter</span>
+        <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;csv&quot;</span><span class="p">:</span>
+            <span class="n">formatter</span> <span class="o">=</span> <span class="n">csv_formatter</span>
+        <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;YAML&quot;</span><span class="p">:</span>
+            <span class="n">formatter</span> <span class="o">=</span> <span class="n">yaml_formatter</span>
+        <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;JSON&quot;</span><span class="p">:</span>
+            <span class="n">formatter</span> <span class="o">=</span> <span class="n">json_formatter</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">formatter</span> <span class="o">=</span> <span class="n">text_formatter</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">query</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;SELECT * FROM &quot;</span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+        <span class="n">stmt</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+        <span class="k">async</span> <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">_engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+            <span class="n">result_proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">stmt</span><span class="p">)</span>
+
+            <span class="n">column_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">result_proxy</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="c1"># Select content or default to first column</span>
+            <span class="n">content_columns</span> <span class="o">=</span> <span class="n">content_columns</span> <span class="ow">or</span> <span class="p">[</span><span class="n">column_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="c1"># Select metadata columns</span>
+            <span class="n">metadata_columns</span> <span class="o">=</span> <span class="n">metadata_columns</span> <span class="ow">or</span> <span class="p">[</span>
+                <span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">column_names</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">content_columns</span>
+            <span class="p">]</span>
+            <span class="c1"># Check validity of metadata json column</span>
+            <span class="k">if</span> <span class="n">metadata_json_column</span> <span class="ow">and</span> <span class="n">metadata_json_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Column </span><span class="si">{</span><span class="n">metadata_json_column</span><span class="si">}</span><span class="s2"> not found in query result </span><span class="si">{</span><span class="n">column_names</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+            <span class="c1"># use default metadata json column if not specified</span>
+            <span class="k">if</span> <span class="n">metadata_json_column</span> <span class="ow">and</span> <span class="n">metadata_json_column</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+                <span class="n">metadata_json_column</span> <span class="o">=</span> <span class="n">metadata_json_column</span>
+            <span class="k">elif</span> <span class="n">DEFAULT_METADATA_COL</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+                <span class="n">metadata_json_column</span> <span class="o">=</span> <span class="n">DEFAULT_METADATA_COL</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">metadata_json_column</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># check validity of other column</span>
+            <span class="n">all_names</span> <span class="o">=</span> <span class="n">content_columns</span> <span class="o">+</span> <span class="n">metadata_columns</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">all_names</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Column </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> not found in query result </span><span class="si">{</span><span class="n">column_names</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__create_key</span><span class="p">,</span>
+            <span class="n">engine</span><span class="p">,</span>
+            <span class="n">query</span><span class="p">,</span>
+            <span class="n">content_columns</span><span class="p">,</span>
+            <span class="n">metadata_columns</span><span class="p">,</span>
+            <span class="n">formatter</span><span class="p">,</span>
+            <span class="n">metadata_json_column</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_sync</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AlloyDBLoader</span><span class="p">],</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">content_columns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">format</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">formatter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBLoader</span><span class="p">:</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">engine</span><span class="p">,</span>
+            <span class="n">query</span><span class="p">,</span>
+            <span class="n">table_name</span><span class="p">,</span>
+            <span class="n">content_columns</span><span class="p">,</span>
+            <span class="n">metadata_columns</span><span class="p">,</span>
+            <span class="n">metadata_json_column</span><span class="p">,</span>
+            <span class="nb">format</span><span class="p">,</span>
+            <span class="n">formatter</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_collect_async_items</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">docs_generator</span><span class="p">:</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">Document</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">doc</span> <span class="k">async</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs_generator</span><span class="p">]</span>
+
+<div class="viewcode-block" id="AlloyDBLoader.load"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/loader.html#langchain_google_alloydb_pg.loader.AlloyDBLoader.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load AlloyDB data into Document objects.&quot;&quot;&quot;</span>
+        <span class="n">documents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_collect_async_items</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alazy_load</span><span class="p">())</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">documents</span></div>
+
+<div class="viewcode-block" id="AlloyDBLoader.aload"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/loader.html#langchain_google_alloydb_pg.loader.AlloyDBLoader.aload">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">aload</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load AlloyDB data into Document objects.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">doc</span> <span class="k">async</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">alazy_load</span><span class="p">()]</span></div>
+
+<div class="viewcode-block" id="AlloyDBLoader.lazy_load"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/loader.html#langchain_google_alloydb_pg.loader.AlloyDBLoader.lazy_load">[docs]</a>    <span class="k">def</span> <span class="nf">lazy_load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load AlloyDB data into Document objects lazily.&quot;&quot;&quot;</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_collect_async_items</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alazy_load</span><span class="p">())</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlloyDBLoader.alazy_load"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/loader.html#langchain_google_alloydb_pg.loader.AlloyDBLoader.alazy_load">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">alazy_load</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load AlloyDB data into Document objects lazily.&quot;&quot;&quot;</span>
+        <span class="n">stmt</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+            <span class="n">result_proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">stmt</span><span class="p">)</span>
+            <span class="c1"># load document one by one</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">row</span> <span class="o">=</span> <span class="n">result_proxy</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">row</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+                <span class="n">row_data</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">column_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_columns</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_columns</span>
+                <span class="n">column_names</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span> <span class="k">else</span> <span class="p">[]</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="p">)</span>
+                    <span class="n">row_data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+                <span class="k">yield</span> <span class="n">_parse_doc_from_row</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">content_columns</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metadata_columns</span><span class="p">,</span>
+                    <span class="n">row_data</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">formatter</span><span class="p">,</span>
+                <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="AlloyDBDocumentSaver"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/loader.html#langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver">[docs]</a><span class="k">class</span> <span class="nc">AlloyDBDocumentSaver</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for saving langchain documents into a AlloyDB database table.&quot;&quot;&quot;</span>
+
+    <span class="n">__create_key</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="n">AlloyDBDocumentSaver</span><span class="o">.</span><span class="n">__create_key</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;Only create class through &#39;create&#39; or &#39;create_sync&#39; methods!&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span> <span class="o">=</span> <span class="n">table_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">content_column</span> <span class="o">=</span> <span class="n">content_column</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata_columns</span> <span class="o">=</span> <span class="n">metadata_columns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span> <span class="o">=</span> <span class="n">metadata_json_column</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">create</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AlloyDBDocumentSaver</span><span class="p">],</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_CONTENT_COL</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_METADATA_COL</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBDocumentSaver</span><span class="p">:</span>
+        <span class="n">table_schema</span> <span class="o">=</span> <span class="k">await</span> <span class="n">engine</span><span class="o">.</span><span class="n">_aload_table_schema</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="n">column_names</span> <span class="o">=</span> <span class="n">table_schema</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">content_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Content column, </span><span class="si">{</span><span class="n">content_column</span><span class="si">}</span><span class="s2">, does not exist.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Set metadata columns to all columns if not set</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadata_columns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">metadata_columns</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">column</span>
+                <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">column_names</span>
+                <span class="k">if</span> <span class="n">column</span> <span class="o">!=</span> <span class="n">content_column</span> <span class="ow">and</span> <span class="n">column</span> <span class="o">!=</span> <span class="n">metadata_json_column</span>
+            <span class="p">]</span>
+
+        <span class="c1"># Check and set metadata json column</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">metadata_columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Metadata column, </span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">, does not exist.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">metadata_json_column</span>
+            <span class="ow">and</span> <span class="n">metadata_json_column</span> <span class="o">!=</span> <span class="n">DEFAULT_METADATA_COL</span>
+            <span class="ow">and</span> <span class="n">metadata_json_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">column_names</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Metadata JSON column, </span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">, does not exist.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">metadata_json_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+            <span class="n">metadata_json_column</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__create_key</span><span class="p">,</span>
+            <span class="n">engine</span><span class="p">,</span>
+            <span class="n">table_name</span><span class="p">,</span>
+            <span class="n">content_column</span><span class="p">,</span>
+            <span class="n">metadata_columns</span><span class="p">,</span>
+            <span class="n">metadata_json_column</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_sync</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AlloyDBDocumentSaver</span><span class="p">],</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_CONTENT_COL</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_METADATA_COL</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBDocumentSaver</span><span class="p">:</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">engine</span><span class="p">,</span>
+            <span class="n">table_name</span><span class="p">,</span>
+            <span class="n">content_column</span><span class="p">,</span>
+            <span class="n">metadata_columns</span><span class="p">,</span>
+            <span class="n">metadata_json_column</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AlloyDBDocumentSaver.aadd_documents"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/loader.html#langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.aadd_documents">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">aadd_documents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save documents in the DocumentSaver table. Document’s metadata is added to columns if found or</span>
+<span class="sd">        stored in langchain_metadata JSON column.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            docs (List[langchain_core.documents.Document]): a list of documents to be saved.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">:</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">_parse_row_from_doc</span><span class="p">(</span>
+                <span class="n">doc</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metadata_columns</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">row</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+            <span class="c1"># Create list of column names</span>
+            <span class="n">insert_stmt</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;INSERT INTO &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="si">}</span><span class="s1">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="n">values_stmt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;VALUES (:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="c1"># Add metadata</span>
+            <span class="k">for</span> <span class="n">metadata_column</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_columns</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">metadata_column</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+                    <span class="n">insert_stmt</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, </span><span class="si">{</span><span class="n">metadata_column</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">values_stmt</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, :</span><span class="si">{</span><span class="n">metadata_column</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="c1"># Add JSON column and/or close statement</span>
+            <span class="n">insert_stmt</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span> <span class="k">else</span> <span class="s2">&quot;)&quot;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span><span class="p">:</span>
+                <span class="n">values_stmt</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, :</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">values_stmt</span> <span class="o">+=</span> <span class="s2">&quot;)&quot;</span>
+
+            <span class="n">query</span> <span class="o">=</span> <span class="n">insert_stmt</span> <span class="o">+</span> <span class="n">values_stmt</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">add_documents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aadd_documents</span><span class="p">(</span><span class="n">docs</span><span class="p">))</span>
+
+<div class="viewcode-block" id="AlloyDBDocumentSaver.adelete"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/loader.html#langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.adelete">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">adelete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete all instances of a document from the DocumentSaver table by matching the entire Document</span>
+<span class="sd">        object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            docs (List[langchain_core.documents.Document]): a list of documents to be deleted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">:</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">_parse_row_from_doc</span><span class="p">(</span>
+                <span class="n">doc</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metadata_columns</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># delete by matching all fields of document</span>
+            <span class="n">where_conditions_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">where_conditions_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">::jsonb @&gt; &#39;</span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;::jsonb&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Handle simple key-value pairs</span>
+                    <span class="n">where_conditions_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> = :</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">where_conditions</span> <span class="o">=</span> <span class="s2">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">where_conditions_list</span><span class="p">)</span>
+            <span class="n">stmt</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;DELETE FROM &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="si">}</span><span class="s1">&quot; WHERE </span><span class="si">{</span><span class="n">where_conditions</span><span class="si">}</span><span class="s1">;&#39;</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
+                    <span class="n">values</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">values</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="n">stmt</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adelete</span><span class="p">(</span><span class="n">docs</span><span class="p">))</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">langchain-google-alloydb-pg</a></h1>
+
+
+
+<p class="blurb">Google Cloud Client Libraries for langchain-google-alloydb-pg</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=googleapis&repo=langchain-google-alloydb-pg-python&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/engine.html">Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/vectorstore.html">Vector Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/loader.html">Document Loader</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/history.html">Chat Message History</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Google.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 4.5.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/googleapis/langchain-google-alloydb-pg-python" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

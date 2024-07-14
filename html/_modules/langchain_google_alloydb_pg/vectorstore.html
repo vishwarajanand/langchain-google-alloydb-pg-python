@@ -1,0 +1,990 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>langchain_google_alloydb_pg.vectorstore &#8212; langchain-google-alloydb-pg  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+          	<div class="admonition" id="python2-eol"> 
+          	 As of January 1, 2020 this library no longer supports Python 2 on the latest released version. 
+          	 Library versions released prior to that date will continue to be available. For more information please
+          	 visit <a href="https://cloud.google.com/python/docs/python2-sunset/">Python 2 support on Google Cloud</a>.
+          	</div>
+            
+  <h1>Source code for langchain_google_alloydb_pg.vectorstore</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2024 Google LLC</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="c1"># TODO: Remove below import when minimum supported Python version is 3.10</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">langchain_core.documents</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">langchain_core.embeddings</span> <span class="kn">import</span> <span class="n">Embeddings</span>
+<span class="kn">from</span> <span class="nn">langchain_core.vectorstores</span> <span class="kn">import</span> <span class="n">VectorStore</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">RowMapping</span>
+
+<span class="kn">from</span> <span class="nn">.engine</span> <span class="kn">import</span> <span class="n">AlloyDBEngine</span>
+<span class="kn">from</span> <span class="nn">.indexes</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+    <span class="n">DEFAULT_INDEX_NAME</span><span class="p">,</span>
+    <span class="n">BaseIndex</span><span class="p">,</span>
+    <span class="n">DistanceStrategy</span><span class="p">,</span>
+    <span class="n">ExactNearestNeighbor</span><span class="p">,</span>
+    <span class="n">QueryOptions</span><span class="p">,</span>
+    <span class="n">ScaNNIndex</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="AlloyDBVectorStore"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore">[docs]</a><span class="k">class</span> <span class="nc">AlloyDBVectorStore</span><span class="p">(</span><span class="n">VectorStore</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Google AlloyDB Vector Store class&quot;&quot;&quot;</span>
+
+    <span class="n">__create_key</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">embedding_service</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;content&quot;</span><span class="p">,</span>
+        <span class="n">embedding_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;embedding&quot;</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">id_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_id&quot;</span><span class="p">,</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;langchain_metadata&quot;</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">index_query_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">QueryOptions</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="n">AlloyDBVectorStore</span><span class="o">.</span><span class="n">__create_key</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;Only create class through &#39;create&#39; or &#39;create_sync&#39; methods!&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding_service</span> <span class="o">=</span> <span class="n">embedding_service</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span> <span class="o">=</span> <span class="n">table_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">content_column</span> <span class="o">=</span> <span class="n">content_column</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding_column</span> <span class="o">=</span> <span class="n">embedding_column</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata_columns</span> <span class="o">=</span> <span class="n">metadata_columns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id_column</span> <span class="o">=</span> <span class="n">id_column</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span> <span class="o">=</span> <span class="n">metadata_json_column</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span> <span class="o">=</span> <span class="n">distance_strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">k</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fetch_k</span> <span class="o">=</span> <span class="n">fetch_k</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_mult</span> <span class="o">=</span> <span class="n">lambda_mult</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index_query_options</span> <span class="o">=</span> <span class="n">index_query_options</span>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.create"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.create">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">create</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AlloyDBVectorStore</span><span class="p">],</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">embedding_service</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;content&quot;</span><span class="p">,</span>
+        <span class="n">embedding_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;embedding&quot;</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">ignore_metadata_columns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">id_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_id&quot;</span><span class="p">,</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;langchain_metadata&quot;</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">index_query_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">QueryOptions</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBVectorStore</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for AlloyDBVectorStore.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            engine (AlloyDBEngine): Connection pool engine for managing connections to AlloyDB database.</span>
+<span class="sd">            embedding_service (Embeddings): Text embedding model to use.</span>
+<span class="sd">            table_name (str): Name of the existing table or the table to be created.</span>
+<span class="sd">            content_column (str): Column that represent a Document’s page_content. Defaults to &quot;content&quot;.</span>
+<span class="sd">            embedding_column (str): Column for embedding vectors. The embedding is generated from the document value. Defaults to &quot;embedding&quot;.</span>
+<span class="sd">            metadata_columns (List[str]): Column(s) that represent a document&#39;s metadata.</span>
+<span class="sd">            ignore_metadata_columns (List[str]): Column(s) to ignore in pre-existing tables for a document&#39;s metadata. Can not be used with metadata_columns. Defaults to None.</span>
+<span class="sd">            id_column (str): Column that represents the Document&#39;s id. Defaults to &quot;langchain_id&quot;.</span>
+<span class="sd">            metadata_json_column (str): Column to store metadata as JSON. Defaults to &quot;langchain_metadata&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">metadata_columns</span> <span class="ow">and</span> <span class="n">ignore_metadata_columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Can not use both metadata_columns and ignore_metadata_columns.&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># Get field type information</span>
+        <span class="n">stmt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;SELECT column_name, data_type FROM information_schema.columns WHERE table_name = &#39;</span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">engine</span><span class="o">.</span><span class="n">_afetch</span><span class="p">(</span><span class="n">stmt</span><span class="p">)</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+            <span class="n">columns</span><span class="p">[</span><span class="n">field</span><span class="p">[</span><span class="s2">&quot;column_name&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">[</span><span class="s2">&quot;data_type&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Check columns</span>
+        <span class="k">if</span> <span class="n">id_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Id column, </span><span class="si">{</span><span class="n">id_column</span><span class="si">}</span><span class="s2">, does not exist.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">content_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Content column, </span><span class="si">{</span><span class="n">content_column</span><span class="si">}</span><span class="s2">, does not exist.&quot;</span><span class="p">)</span>
+        <span class="n">content_type</span> <span class="o">=</span> <span class="n">columns</span><span class="p">[</span><span class="n">content_column</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">content_type</span> <span class="o">!=</span> <span class="s2">&quot;text&quot;</span> <span class="ow">and</span> <span class="s2">&quot;char&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">content_type</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Content column, </span><span class="si">{</span><span class="n">content_column</span><span class="si">}</span><span class="s2">, is type, </span><span class="si">{</span><span class="n">content_type</span><span class="si">}</span><span class="s2">. It must be a type of character string.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">embedding_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Embedding column, </span><span class="si">{</span><span class="n">embedding_column</span><span class="si">}</span><span class="s2">, does not exist.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">columns</span><span class="p">[</span><span class="n">embedding_column</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;USER-DEFINED&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Embedding column, </span><span class="si">{</span><span class="n">embedding_column</span><span class="si">}</span><span class="s2">, is not type Vector.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">metadata_json_column</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="kc">None</span> <span class="k">if</span> <span class="n">metadata_json_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">columns</span> <span class="k">else</span> <span class="n">metadata_json_column</span>
+        <span class="p">)</span>
+
+        <span class="c1"># If using metadata_columns check to make sure column exists</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">metadata_columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Metadata column, </span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">, does not exist.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># If using ignore_metadata_columns, filter out known columns and set known metadata columns</span>
+        <span class="n">all_columns</span> <span class="o">=</span> <span class="n">columns</span>
+        <span class="k">if</span> <span class="n">ignore_metadata_columns</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">ignore_metadata_columns</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">all_columns</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+
+            <span class="k">del</span> <span class="n">all_columns</span><span class="p">[</span><span class="n">id_column</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">all_columns</span><span class="p">[</span><span class="n">content_column</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">all_columns</span><span class="p">[</span><span class="n">embedding_column</span><span class="p">]</span>
+            <span class="n">metadata_columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">all_columns</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__create_key</span><span class="p">,</span>
+            <span class="n">engine</span><span class="p">,</span>
+            <span class="n">embedding_service</span><span class="p">,</span>
+            <span class="n">table_name</span><span class="p">,</span>
+            <span class="n">content_column</span><span class="p">,</span>
+            <span class="n">embedding_column</span><span class="p">,</span>
+            <span class="n">metadata_columns</span><span class="p">,</span>
+            <span class="n">id_column</span><span class="p">,</span>
+            <span class="n">metadata_json_column</span><span class="p">,</span>
+            <span class="n">distance_strategy</span><span class="p">,</span>
+            <span class="n">k</span><span class="p">,</span>
+            <span class="n">fetch_k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="p">,</span>
+            <span class="n">index_query_options</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_sync</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">embedding_service</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;content&quot;</span><span class="p">,</span>
+        <span class="n">embedding_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;embedding&quot;</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">ignore_metadata_columns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">id_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_id&quot;</span><span class="p">,</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_metadata&quot;</span><span class="p">,</span>
+        <span class="n">distance_strategy</span><span class="p">:</span> <span class="n">DistanceStrategy</span> <span class="o">=</span> <span class="n">DEFAULT_DISTANCE_STRATEGY</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">index_query_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">QueryOptions</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBVectorStore</span><span class="p">:</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">engine</span><span class="p">,</span>
+            <span class="n">embedding_service</span><span class="p">,</span>
+            <span class="n">table_name</span><span class="p">,</span>
+            <span class="n">content_column</span><span class="p">,</span>
+            <span class="n">embedding_column</span><span class="p">,</span>
+            <span class="n">metadata_columns</span><span class="p">,</span>
+            <span class="n">ignore_metadata_columns</span><span class="p">,</span>
+            <span class="n">id_column</span><span class="p">,</span>
+            <span class="n">metadata_json_column</span><span class="p">,</span>
+            <span class="n">distance_strategy</span><span class="p">,</span>
+            <span class="n">k</span><span class="p">,</span>
+            <span class="n">fetch_k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="p">,</span>
+            <span class="n">index_query_options</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">embeddings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Embeddings</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_service</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_aadd_embeddings</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">embeddings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ids</span><span class="p">:</span>
+            <span class="n">ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;NULL&quot;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">metadatas</span><span class="p">:</span>
+            <span class="n">metadatas</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+        <span class="c1"># Insert embeddings</span>
+        <span class="k">for</span> <span class="nb">id</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">embedding</span><span class="p">,</span> <span class="n">metadata</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">texts</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">,</span> <span class="n">metadatas</span><span class="p">):</span>
+            <span class="n">metadata_col_names</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;, &quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata_columns</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata_columns</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="p">)</span>
+            <span class="n">insert_stmt</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;INSERT INTO &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="si">}</span><span class="s1">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id_column</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">embedding_column</span><span class="si">}{</span><span class="n">metadata_col_names</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="nb">id</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">content</span><span class="p">,</span> <span class="s2">&quot;embedding&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">embedding</span><span class="p">)}</span>
+            <span class="n">values_stmt</span> <span class="o">=</span> <span class="s2">&quot;VALUES (:id, :content, :embedding&quot;</span>
+
+            <span class="c1"># Add metadata</span>
+            <span class="n">extra</span> <span class="o">=</span> <span class="n">metadata</span>
+            <span class="k">for</span> <span class="n">metadata_column</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_columns</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">metadata_column</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">:</span>
+                    <span class="n">values_stmt</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, :</span><span class="si">{</span><span class="n">metadata_column</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">values</span><span class="p">[</span><span class="n">metadata_column</span><span class="p">]</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="n">metadata_column</span><span class="p">]</span>
+                    <span class="k">del</span> <span class="n">extra</span><span class="p">[</span><span class="n">metadata_column</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">values_stmt</span> <span class="o">+=</span> <span class="s2">&quot;,null&quot;</span>
+
+            <span class="c1"># Add JSON column and/or close statement</span>
+            <span class="n">insert_stmt</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span> <span class="k">else</span> <span class="s2">&quot;)&quot;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span><span class="p">:</span>
+                <span class="n">values_stmt</span> <span class="o">+=</span> <span class="s2">&quot;, :extra)&quot;</span>
+                <span class="n">values</span><span class="p">[</span><span class="s2">&quot;extra&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">values_stmt</span> <span class="o">+=</span> <span class="s2">&quot;)&quot;</span>
+
+            <span class="n">query</span> <span class="o">=</span> <span class="n">insert_stmt</span> <span class="o">+</span> <span class="n">values_stmt</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ids</span>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.aadd_texts"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_texts">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">aadd_texts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_service</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">texts</span><span class="p">))</span>
+        <span class="n">ids</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aadd_embeddings</span><span class="p">(</span>
+            <span class="n">texts</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">,</span> <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ids</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.aadd_documents"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_documents">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">aadd_documents</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">documents</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">doc</span><span class="o">.</span><span class="n">page_content</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">]</span>
+        <span class="n">metadatas</span> <span class="o">=</span> <span class="p">[</span><span class="n">doc</span><span class="o">.</span><span class="n">metadata</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">]</span>
+        <span class="n">ids</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">aadd_texts</span><span class="p">(</span><span class="n">texts</span><span class="p">,</span> <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ids</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.add_texts"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_texts">[docs]</a>    <span class="k">def</span> <span class="nf">add_texts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aadd_texts</span><span class="p">(</span><span class="n">texts</span><span class="p">,</span> <span class="n">metadatas</span><span class="p">,</span> <span class="n">ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.add_documents"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_documents">[docs]</a>    <span class="k">def</span> <span class="nf">add_documents</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">documents</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aadd_documents</span><span class="p">(</span><span class="n">documents</span><span class="p">,</span> <span class="n">ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.adelete"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.adelete">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">adelete</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ids</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">id_list</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">])</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;DELETE FROM &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="si">}</span><span class="s1">&quot; WHERE </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id_column</span><span class="si">}</span><span class="s1"> in (</span><span class="si">{</span><span class="n">id_list</span><span class="si">}</span><span class="s1">)&#39;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.delete"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adelete</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.afrom_texts"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_texts">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">afrom_texts</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AlloyDBVectorStore</span><span class="p">],</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;content&quot;</span><span class="p">,</span>
+        <span class="n">embedding_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;embedding&quot;</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">ignore_metadata_columns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">id_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_id&quot;</span><span class="p">,</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_metadata&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBVectorStore</span><span class="p">:</span>
+        <span class="n">vs</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">cls</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">engine</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">table_name</span><span class="p">,</span>
+            <span class="n">content_column</span><span class="p">,</span>
+            <span class="n">embedding_column</span><span class="p">,</span>
+            <span class="n">metadata_columns</span><span class="p">,</span>
+            <span class="n">ignore_metadata_columns</span><span class="p">,</span>
+            <span class="n">id_column</span><span class="p">,</span>
+            <span class="n">metadata_json_column</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="n">vs</span><span class="o">.</span><span class="n">aadd_texts</span><span class="p">(</span><span class="n">texts</span><span class="p">,</span> <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vs</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.afrom_documents"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_documents">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">afrom_documents</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AlloyDBVectorStore</span><span class="p">],</span>
+        <span class="n">documents</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;content&quot;</span><span class="p">,</span>
+        <span class="n">embedding_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;embedding&quot;</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">ignore_metadata_columns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">id_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_id&quot;</span><span class="p">,</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_metadata&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBVectorStore</span><span class="p">:</span>
+        <span class="n">vs</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">cls</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">engine</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">table_name</span><span class="p">,</span>
+            <span class="n">content_column</span><span class="p">,</span>
+            <span class="n">embedding_column</span><span class="p">,</span>
+            <span class="n">metadata_columns</span><span class="p">,</span>
+            <span class="n">ignore_metadata_columns</span><span class="p">,</span>
+            <span class="n">id_column</span><span class="p">,</span>
+            <span class="n">metadata_json_column</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">doc</span><span class="o">.</span><span class="n">page_content</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">]</span>
+        <span class="n">metadatas</span> <span class="o">=</span> <span class="p">[</span><span class="n">doc</span><span class="o">.</span><span class="n">metadata</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">]</span>
+        <span class="k">await</span> <span class="n">vs</span><span class="o">.</span><span class="n">aadd_texts</span><span class="p">(</span><span class="n">texts</span><span class="p">,</span> <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vs</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.from_texts"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_texts">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_texts</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AlloyDBVectorStore</span><span class="p">],</span>
+        <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">metadatas</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;content&quot;</span><span class="p">,</span>
+        <span class="n">embedding_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;embedding&quot;</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">ignore_metadata_columns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">id_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_id&quot;</span><span class="p">,</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_metadata&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBVectorStore</span><span class="p">:</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">afrom_texts</span><span class="p">(</span>
+            <span class="n">texts</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">engine</span><span class="p">,</span>
+            <span class="n">table_name</span><span class="p">,</span>
+            <span class="n">metadatas</span><span class="o">=</span><span class="n">metadatas</span><span class="p">,</span>
+            <span class="n">content_column</span><span class="o">=</span><span class="n">content_column</span><span class="p">,</span>
+            <span class="n">embedding_column</span><span class="o">=</span><span class="n">embedding_column</span><span class="p">,</span>
+            <span class="n">metadata_columns</span><span class="o">=</span><span class="n">metadata_columns</span><span class="p">,</span>
+            <span class="n">ignore_metadata_columns</span><span class="o">=</span><span class="n">ignore_metadata_columns</span><span class="p">,</span>
+            <span class="n">metadata_json_column</span><span class="o">=</span><span class="n">metadata_json_column</span><span class="p">,</span>
+            <span class="n">id_column</span><span class="o">=</span><span class="n">id_column</span><span class="p">,</span>
+            <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.from_documents"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_documents">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_documents</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AlloyDBVectorStore</span><span class="p">],</span>
+        <span class="n">documents</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">],</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AlloyDBEngine</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;content&quot;</span><span class="p">,</span>
+        <span class="n">embedding_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;embedding&quot;</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">ignore_metadata_columns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">id_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_id&quot;</span><span class="p">,</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_metadata&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBVectorStore</span><span class="p">:</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">afrom_documents</span><span class="p">(</span>
+            <span class="n">documents</span><span class="p">,</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">engine</span><span class="p">,</span>
+            <span class="n">table_name</span><span class="p">,</span>
+            <span class="n">content_column</span><span class="o">=</span><span class="n">content_column</span><span class="p">,</span>
+            <span class="n">embedding_column</span><span class="o">=</span><span class="n">embedding_column</span><span class="p">,</span>
+            <span class="n">metadata_columns</span><span class="o">=</span><span class="n">metadata_columns</span><span class="p">,</span>
+            <span class="n">ignore_metadata_columns</span><span class="o">=</span><span class="n">ignore_metadata_columns</span><span class="p">,</span>
+            <span class="n">metadata_json_column</span><span class="o">=</span><span class="n">metadata_json_column</span><span class="p">,</span>
+            <span class="n">id_column</span><span class="o">=</span><span class="n">id_column</span><span class="p">,</span>
+            <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span></div>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">__query_collection</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">RowMapping</span><span class="p">]:</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">k</span> <span class="k">if</span> <span class="n">k</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span>
+        <span class="n">operator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span><span class="o">.</span><span class="n">operator</span>
+        <span class="n">search_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_strategy</span><span class="o">.</span><span class="n">search_function</span>
+
+        <span class="nb">filter</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;WHERE </span><span class="si">{</span><span class="nb">filter</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="nb">filter</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">stmt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;SELECT *, </span><span class="si">{</span><span class="n">search_function</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">embedding_column</span><span class="si">}</span><span class="s2">, &#39;</span><span class="si">{</span><span class="n">embedding</span><span class="si">}</span><span class="s2">&#39;) as distance FROM </span><span class="se">\&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2"> </span><span class="si">{</span><span class="nb">filter</span><span class="si">}</span><span class="s2"> ORDER BY </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">embedding_column</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">operator</span><span class="si">}</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">embedding</span><span class="si">}</span><span class="s2">&#39; LIMIT </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_query_options</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;SET LOCAL </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">index_query_options</span><span class="o">.</span><span class="n">to_string</span><span class="p">()</span><span class="si">}</span><span class="s2">;&quot;</span>
+            <span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_afetch</span><span class="p">(</span><span class="n">stmt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.similarity_search"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">asimilarity_search</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.asimilarity_search"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">asimilarity_search</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_service</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">asimilarity_search_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.asimilarity_search_with_score"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_with_score">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">asimilarity_search_with_score</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_service</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">docs</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">asimilarity_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">docs</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.asimilarity_search_by_vector"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_by_vector">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">asimilarity_search_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+        <span class="n">docs_and_scores</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">asimilarity_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">doc</span> <span class="k">for</span> <span class="n">doc</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">docs_and_scores</span><span class="p">]</span></div>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">asimilarity_search_with_score_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query_collection</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="n">documents_with_scores</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span><span class="p">]</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span> <span class="ow">and</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span><span class="p">]</span>
+                <span class="k">else</span> <span class="p">{}</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_columns</span><span class="p">:</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+            <span class="n">documents_with_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="n">Document</span><span class="p">(</span>
+                        <span class="n">page_content</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="p">],</span>
+                        <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="n">row</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">documents_with_scores</span>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.amax_marginal_relevance_search"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">amax_marginal_relevance_search</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_service</span><span class="o">.</span><span class="n">embed_query</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">amax_marginal_relevance_search_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="n">fetch_k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+            <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.amax_marginal_relevance_search_by_vector"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search_by_vector">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">amax_marginal_relevance_search_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return docs selected using the maximal marginal relevance.&quot;&quot;&quot;</span>
+        <span class="n">docs_and_scores</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">amax_marginal_relevance_search_with_score_by_vector</span><span class="p">(</span>
+                <span class="n">embedding</span><span class="p">,</span>
+                <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+                <span class="n">fetch_k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span>
+                <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+                <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">docs_and_scores</span><span class="p">]</span></div>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">amax_marginal_relevance_search_with_score_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query_collection</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="o">=</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="n">k</span> <span class="o">=</span> <span class="n">k</span> <span class="k">if</span> <span class="n">k</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span>
+        <span class="n">fetch_k</span> <span class="o">=</span> <span class="n">fetch_k</span> <span class="k">if</span> <span class="n">fetch_k</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch_k</span>
+        <span class="n">lambda_mult</span> <span class="o">=</span> <span class="n">lambda_mult</span> <span class="k">if</span> <span class="n">lambda_mult</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_mult</span>
+        <span class="n">embedding_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">embedding_column</span><span class="p">])</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+        <span class="n">mmr_selected</span> <span class="o">=</span> <span class="n">maximal_marginal_relevance</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">embedding</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="n">embedding_list</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">documents_with_scores</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span><span class="p">]</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span> <span class="ow">and</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata_json_column</span><span class="p">]</span>
+                <span class="k">else</span> <span class="p">{}</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata_columns</span><span class="p">:</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+            <span class="n">documents_with_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="n">Document</span><span class="p">(</span>
+                        <span class="n">page_content</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="p">],</span>
+                        <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="n">row</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">documents_with_scores</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">mmr_selected</span><span class="p">]</span>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.similarity_search_with_score"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_with_score">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_with_score</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">asimilarity_search_with_score</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.similarity_search_by_vector"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_by_vector">[docs]</a>    <span class="k">def</span> <span class="nf">similarity_search_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">asimilarity_search_by_vector</span><span class="p">(</span><span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">similarity_search_with_score_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">asimilarity_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.max_marginal_relevance_search"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search">[docs]</a>    <span class="k">def</span> <span class="nf">max_marginal_relevance_search</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">amax_marginal_relevance_search</span><span class="p">(</span>
+            <span class="n">query</span><span class="p">,</span>
+            <span class="n">k</span><span class="p">,</span>
+            <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+            <span class="n">fetch_k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AlloyDBVectorStore.max_marginal_relevance_search_by_vector"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search_by_vector">[docs]</a>    <span class="k">def</span> <span class="nf">max_marginal_relevance_search_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">amax_marginal_relevance_search_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">k</span><span class="p">,</span>
+            <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+            <span class="n">fetch_k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">max_marginal_relevance_search_with_score_by_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">embedding</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fetch_k</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">lambda_mult</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">amax_marginal_relevance_search_with_score_by_vector</span><span class="p">(</span>
+            <span class="n">embedding</span><span class="p">,</span>
+            <span class="n">k</span><span class="p">,</span>
+            <span class="nb">filter</span><span class="o">=</span><span class="nb">filter</span><span class="p">,</span>
+            <span class="n">fetch_k</span><span class="o">=</span><span class="n">fetch_k</span><span class="p">,</span>
+            <span class="n">lambda_mult</span><span class="o">=</span><span class="n">lambda_mult</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_maintenance_work_mem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_leaves</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">vector_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Required index memory in MB</span>
+        <span class="n">buffer</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">index_memory_required</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">round</span><span class="p">(</span><span class="mi">50</span> <span class="o">*</span> <span class="n">num_leaves</span> <span class="o">*</span> <span class="n">vector_size</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">1024</span><span class="p">)</span> <span class="o">+</span> <span class="n">buffer</span>
+        <span class="p">)</span>  <span class="c1"># Convert bytes to MB</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;SET maintenance_work_mem TO &#39;</span><span class="si">{</span><span class="n">index_memory_required</span><span class="si">}</span><span class="s2"> MB&#39;;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">aapply_vector_index</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">index</span><span class="p">:</span> <span class="n">BaseIndex</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">concurrently</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">ExactNearestNeighbor</span><span class="p">):</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">adrop_vector_index</span><span class="p">()</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Create `postgres_ann` extension when a `ScaNN` index is applied</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">ScaNNIndex</span><span class="p">):</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="s2">&quot;CREATE EXTENSION IF NOT EXISTS postgres_ann&quot;</span><span class="p">)</span>
+            <span class="n">function</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">distance_strategy</span><span class="o">.</span><span class="n">scann_index_function</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">function</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">distance_strategy</span><span class="o">.</span><span class="n">index_function</span>
+
+        <span class="nb">filter</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;WHERE (</span><span class="si">{</span><span class="n">index</span><span class="o">.</span><span class="n">partial_indexes</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">if</span> <span class="n">index</span><span class="o">.</span><span class="n">partial_indexes</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="s2">&quot;WITH &quot;</span> <span class="o">+</span> <span class="n">index</span><span class="o">.</span><span class="n">index_options</span><span class="p">()</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">index</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">stmt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;CREATE INDEX </span><span class="si">{</span><span class="s1">&#39;CONCURRENTLY&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">concurrently</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> ON </span><span class="se">\&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2"> USING </span><span class="si">{</span><span class="n">index</span><span class="o">.</span><span class="n">index_type</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">embedding_column</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="n">params</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">filter</span><span class="si">}</span><span class="s2">;&quot;</span>
+        <span class="k">if</span> <span class="n">concurrently</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_aexecute_outside_tx</span><span class="p">(</span><span class="n">stmt</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="n">stmt</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">areindex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_INDEX_NAME</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;REINDEX INDEX </span><span class="si">{</span><span class="n">index_name</span><span class="si">}</span><span class="s2">;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">adrop_vector_index</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_INDEX_NAME</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;DROP INDEX IF EXISTS </span><span class="si">{</span><span class="n">index_name</span><span class="si">}</span><span class="s2">;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">is_valid_index</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_INDEX_NAME</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        SELECT tablename, indexname</span>
+<span class="s2">        FROM pg_indexes</span>
+<span class="s2">        WHERE tablename = &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="si">}</span><span class="s2">&#39; AND indexname = &#39;</span><span class="si">{</span><span class="n">index_name</span><span class="si">}</span><span class="s2">&#39;;</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">_afetch</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span></div>
+
+
+<span class="c1">### The following is copied from langchain-community until it&#39;s moved into core</span>
+
+<span class="n">Matrix</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="maximal_marginal_relevance"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.maximal_marginal_relevance">[docs]</a><span class="k">def</span> <span class="nf">maximal_marginal_relevance</span><span class="p">(</span>
+    <span class="n">query_embedding</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">embedding_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+    <span class="n">lambda_mult</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate maximal marginal relevance.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">min</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">embedding_list</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">query_embedding</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">query_embedding</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">query_embedding</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">similarity_to_query</span> <span class="o">=</span> <span class="n">cosine_similarity</span><span class="p">(</span><span class="n">query_embedding</span><span class="p">,</span> <span class="n">embedding_list</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">most_similar</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">similarity_to_query</span><span class="p">))</span>
+    <span class="n">idxs</span> <span class="o">=</span> <span class="p">[</span><span class="n">most_similar</span><span class="p">]</span>
+    <span class="n">selected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">embedding_list</span><span class="p">[</span><span class="n">most_similar</span><span class="p">]])</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">min</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">embedding_list</span><span class="p">)):</span>
+        <span class="n">best_score</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="n">idx_to_add</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">similarity_to_selected</span> <span class="o">=</span> <span class="n">cosine_similarity</span><span class="p">(</span><span class="n">embedding_list</span><span class="p">,</span> <span class="n">selected</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">query_score</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">similarity_to_query</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idxs</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">redundant_score</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">similarity_to_selected</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">equation_score</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">lambda_mult</span> <span class="o">*</span> <span class="n">query_score</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lambda_mult</span><span class="p">)</span> <span class="o">*</span> <span class="n">redundant_score</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">equation_score</span> <span class="o">&gt;</span> <span class="n">best_score</span><span class="p">:</span>
+                <span class="n">best_score</span> <span class="o">=</span> <span class="n">equation_score</span>
+                <span class="n">idx_to_add</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">idxs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx_to_add</span><span class="p">)</span>
+        <span class="n">selected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">selected</span><span class="p">,</span> <span class="p">[</span><span class="n">embedding_list</span><span class="p">[</span><span class="n">idx_to_add</span><span class="p">]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">idxs</span></div>
+
+
+<div class="viewcode-block" id="cosine_similarity"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/vectorstore.html#langchain_google_alloydb_pg.vectorstore.cosine_similarity">[docs]</a><span class="k">def</span> <span class="nf">cosine_similarity</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">Matrix</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">Matrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Row-wise cosine similarity between two equal-width matrices.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Number of columns in X and Y must be the same. X has shape </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;and Y has shape </span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">simsimd</span> <span class="k">as</span> <span class="nn">simd</span>  <span class="c1"># type: ignore</span>
+
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">simd</span><span class="o">.</span><span class="n">cdist</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;cosine&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">Z</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">Z</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="n">X_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Y_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Ignore divide by zero errors run time warnings as those are handled below.</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+            <span class="n">similarity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">X_norm</span><span class="p">,</span> <span class="n">Y_norm</span><span class="p">)</span>
+        <span class="n">similarity</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">similarity</span><span class="p">)</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">similarity</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="n">similarity</span></div>
+
+
+<span class="c1">### End code from langchain-community</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">langchain-google-alloydb-pg</a></h1>
+
+
+
+<p class="blurb">Google Cloud Client Libraries for langchain-google-alloydb-pg</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=googleapis&repo=langchain-google-alloydb-pg-python&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/engine.html">Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/vectorstore.html">Vector Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/loader.html">Document Loader</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/history.html">Chat Message History</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Google.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 4.5.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/googleapis/langchain-google-alloydb-pg-python" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

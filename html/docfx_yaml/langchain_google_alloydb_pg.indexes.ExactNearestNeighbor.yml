@@ -1,0 +1,30 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- attributes: []
+  children: []
+  class: langchain_google_alloydb_pg.indexes.ExactNearestNeighbor
+  enum: []
+  fullName: langchain_google_alloydb_pg.indexes.ExactNearestNeighbor
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.indexes
+  name: ExactNearestNeighbor
+  source:
+    id: ExactNearestNeighbor
+    path: src/langchain_google_alloydb_pg/indexes.py
+    startLine: 57
+  summary: 'ExactNearestNeighbor(name: str = ''langchainvectorindex'', index_type:
+    str = ''exactnearestneighbor'', distance_strategy: <xref uid="langchain_google_alloydb_pg.indexes.DistanceStrategy">langchain_google_alloydb_pg.indexes.DistanceStrategy</xref>
+    = <factory>, partial_indexes: Optional[List[str]] = None)
+
+
+    '
+  syntax:
+    content: 'ExactNearestNeighbor(name: str = ''langchainvectorindex'', index_type:
+      str = ''exactnearestneighbor'', distance_strategy: langchain_google_alloydb_pg.indexes.DistanceStrategy
+      = <factory>, partial_indexes: Optional[List[str]] = None)'
+    parameters: []
+  type: class
+  uid: langchain_google_alloydb_pg.indexes.ExactNearestNeighbor
+references: []

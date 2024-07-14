@@ -1,0 +1,30 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- attributes: []
+  children: []
+  class: langchain_google_alloydb_pg.indexes.IVFIndex
+  enum: []
+  fullName: langchain_google_alloydb_pg.indexes.IVFIndex
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.indexes
+  name: IVFIndex
+  source:
+    id: IVFIndex
+    path: src/langchain_google_alloydb_pg/indexes.py
+    startLine: 104
+  summary: 'IVFIndex(name: str = ''langchainvectorindex'', index_type: str = ''ivf'',
+    distance_strategy: <xref uid="langchain_google_alloydb_pg.indexes.DistanceStrategy">langchain_google_alloydb_pg.indexes.DistanceStrategy</xref>
+    = <factory>, partial_indexes: Optional[List[str]] = None, lists: int = 100)
+
+
+    '
+  syntax:
+    content: 'IVFIndex(name: str = ''langchainvectorindex'', index_type: str = ''ivf'',
+      distance_strategy: langchain_google_alloydb_pg.indexes.DistanceStrategy = <factory>,
+      partial_indexes: Optional[List[str]] = None, lists: int = 100)'
+    parameters: []
+  type: class
+  uid: langchain_google_alloydb_pg.indexes.IVFIndex
+references: []

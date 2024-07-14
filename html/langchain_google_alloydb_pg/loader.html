@@ -1,0 +1,222 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Document Loader &#8212; langchain-google-alloydb-pg  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Chat Message History" href="history.html" />
+    <link rel="prev" title="Vector Store" href="vectorstore.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+          	<div class="admonition" id="python2-eol"> 
+          	 As of January 1, 2020 this library no longer supports Python 2 on the latest released version. 
+          	 Library versions released prior to that date will continue to be available. For more information please
+          	 visit <a href="https://cloud.google.com/python/docs/python2-sunset/">Python 2 support on Google Cloud</a>.
+          	</div>
+            
+  <section id="document-loader">
+<h1>Document Loader<a class="headerlink" href="#document-loader" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">langchain_google_alloydb_pg.loader.</span></span><span class="sig-name descname"><span class="pre">AlloyDBDocumentSaver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.loader.object.html"><span class="pre">object</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.engine.AlloyDBEngine.html"><span class="pre">langchain_google_alloydb_pg.engine.AlloyDBEngine</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.List.html"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_json_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.Optional.html"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/loader.html#AlloyDBDocumentSaver"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>A class for saving langchain documents into a AlloyDB database table.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aadd_documents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.List.html"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_core.documents.base.Document.html"><span class="pre">langchain_core.documents.base.Document</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../None.html"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/loader.html#AlloyDBDocumentSaver.aadd_documents"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Save documents in the DocumentSaver table. Document’s metadata is added to columns if found or
+stored in langchain_metadata JSON column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>docs</strong> (<a class="reference internal" href="../langchain_google_alloydb_pg.loader.List.html"><em>List</em></a><em>[</em><a class="reference internal" href="../langchain_core.documents.Document.html"><em>langchain_core.documents.Document</em></a><em>]</em>) – a list of documents to be saved.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">adelete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.List.html"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_core.documents.base.Document.html"><span class="pre">langchain_core.documents.base.Document</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../None.html"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/loader.html#AlloyDBDocumentSaver.adelete"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Delete all instances of a document from the DocumentSaver table by matching the entire Document
+object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>docs</strong> (<a class="reference internal" href="../langchain_google_alloydb_pg.loader.List.html"><em>List</em></a><em>[</em><a class="reference internal" href="../langchain_core.documents.Document.html"><em>langchain_core.documents.Document</em></a><em>]</em>) – a list of documents to be deleted.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">langchain_google_alloydb_pg.loader.</span></span><span class="sig-name descname"><span class="pre">AlloyDBLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.loader.object.html"><span class="pre">object</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.engine.AlloyDBEngine.html"><span class="pre">langchain_google_alloydb_pg.engine.AlloyDBEngine</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.List.html"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.List.html"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formatter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.Callable.html"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../typing.Dict.html"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../typing.Any.html"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../typing.Iterable.html"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_json_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.Optional.html"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/loader.html#AlloyDBLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Load documents from AlloyDB`.</p>
+<p>Each document represents one row of the result. The <cite>content_columns</cite> are
+written into the <cite>content_columns</cite> of the document. The <cite>metadata_columns</cite> are written
+into the <cite>metadata_columns</cite> of the document. By default, first columns is written into
+the <cite>page_content</cite> and everything else into the <cite>metadata</cite>.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">alazy_load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../typing.AsyncIterator.html"><span class="pre">AsyncIterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_core.documents.base.Document.html"><span class="pre">langchain_core.documents.base.Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/loader.html#AlloyDBLoader.alazy_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Load AlloyDB data into Document objects lazily.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aload</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../typing.List.html"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_core.documents.base.Document.html"><span class="pre">langchain_core.documents.base.Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/loader.html#AlloyDBLoader.aload"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Load AlloyDB data into Document objects.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">async</span><span class="w"> </span><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../langchain_google_alloydb_pg.engine.AlloyDBEngine.html"><span class="pre">langchain_google_alloydb_pg.engine.AlloyDBEngine</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.Optional.html"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.Optional.html"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.Optional.html"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../typing.List.html"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.Optional.html"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../typing.List.html"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_json_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.Optional.html"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.Optional.html"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formatter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../typing.Optional.html"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../typing.Callable.html"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../langchain_google_alloydb_pg.loader.AlloyDBLoader.html"><span class="pre">langchain_google_alloydb_pg.loader.AlloyDBLoader</span></a></span></span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/loader.html#AlloyDBLoader.create"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Constructor for AlloyDBLoader</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>engine</strong> (<a class="reference internal" href="../langchain_google_alloydb_pg.loader.AlloyDBEngine.html"><em>AlloyDBEngine</em></a>) – AsyncEngine with pool connection to the postgres database</p></li>
+<li><p><strong>query</strong> (<a class="reference internal" href="../langchain_google_alloydb_pg.loader.Optional.html"><em>Optional</em></a><em>[</em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><em>str</em></a><em>]</em><em>, </em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.optional.html"><em>optional</em></a>) – SQL query. Defaults to None.</p></li>
+<li><p><strong>table_name</strong> (<a class="reference internal" href="../langchain_google_alloydb_pg.loader.Optional.html"><em>Optional</em></a><em>[</em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><em>str</em></a><em>]</em><em>, </em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.optional.html"><em>optional</em></a>) – Name of table to query. Defaults to None.</p></li>
+<li><p><strong>content_columns</strong> (<a class="reference internal" href="../langchain_google_alloydb_pg.loader.Optional.html"><em>Optional</em></a><em>[</em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.List.html"><em>List</em></a><em>[</em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><em>str</em></a><em>]</em><em>]</em><em>, </em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.optional.html"><em>optional</em></a>) – Column that represent a Document’s page_content. Defaults to the first column.</p></li>
+<li><p><strong>metadata_columns</strong> (<a class="reference internal" href="../langchain_google_alloydb_pg.loader.Optional.html"><em>Optional</em></a><em>[</em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.List.html"><em>List</em></a><em>[</em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><em>str</em></a><em>]</em><em>]</em><em>, </em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.optional.html"><em>optional</em></a>) – Column(s) that represent a Document’s metadata.. Defaults to None.</p></li>
+<li><p><strong>metadata_json_column</strong> (<a class="reference internal" href="../langchain_google_alloydb_pg.loader.Optional.html"><em>Optional</em></a><em>[</em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><em>str</em></a><em>]</em><em>, </em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.optional.html"><em>optional</em></a>) – Column to store metadata as JSON. Defaults to “langchain_metadata”.</p></li>
+<li><p><strong>format</strong> (<a class="reference internal" href="../langchain_google_alloydb_pg.loader.Optional.html"><em>Optional</em></a><em>[</em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.str.html"><em>str</em></a><em>]</em><em>, </em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.optional.html"><em>optional</em></a>) – Format of page content (OneOf: text, csv, YAML, JSON). Defaults to ‘text’.</p></li>
+<li><p><strong>formatter</strong> (<a class="reference internal" href="../langchain_google_alloydb_pg.loader.Optional.html"><em>Optional</em></a><em>[</em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.Callable.html"><em>Callable</em></a><em>]</em><em>, </em><a class="reference internal" href="../langchain_google_alloydb_pg.loader.optional.html"><em>optional</em></a>) – A function to format page content (OneOf: format, formatter). Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>AlloyDBLoader</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">lazy_load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../typing.Iterator.html"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_core.documents.base.Document.html"><span class="pre">langchain_core.documents.base.Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/loader.html#AlloyDBLoader.lazy_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Load AlloyDB data into Document objects lazily.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../typing.List.html"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../langchain_core.documents.base.Document.html"><span class="pre">langchain_core.documents.base.Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/langchain_google_alloydb_pg/loader.html#AlloyDBLoader.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Load AlloyDB data into Document objects.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">langchain-google-alloydb-pg</a></h1>
+
+
+
+<p class="blurb">Google Cloud Client Libraries for langchain-google-alloydb-pg</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=googleapis&repo=langchain-google-alloydb-pg-python&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="engine.html">Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vectorstore.html">Vector Store</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Document Loader</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">Chat Message History</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="vectorstore.html" title="previous chapter">Vector Store</a></li>
+      <li>Next: <a href="history.html" title="next chapter">Chat Message History</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Google.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 4.5.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../_sources/langchain_google_alloydb_pg/loader.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/googleapis/langchain-google-alloydb-pg-python" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

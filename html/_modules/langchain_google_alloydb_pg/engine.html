@@ -1,0 +1,545 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>langchain_google_alloydb_pg.engine &#8212; langchain-google-alloydb-pg  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+          	<div class="admonition" id="python2-eol"> 
+          	 As of January 1, 2020 this library no longer supports Python 2 on the latest released version. 
+          	 Library versions released prior to that date will continue to be available. For more information please
+          	 visit <a href="https://cloud.google.com/python/docs/python2-sunset/">Python 2 support on Google Cloud</a>.
+          	</div>
+            
+  <h1>Source code for langchain_google_alloydb_pg.engine</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2024 Google LLC</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Awaitable</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">aiohttp</span>
+<span class="kn">import</span> <span class="nn">google.auth</span>  <span class="c1"># type: ignore</span>
+<span class="kn">import</span> <span class="nn">google.auth.transport.requests</span>  <span class="c1"># type: ignore</span>
+<span class="kn">from</span> <span class="nn">google.cloud.alloydb.connector</span> <span class="kn">import</span> <span class="n">AsyncConnector</span><span class="p">,</span> <span class="n">IPTypes</span><span class="p">,</span> <span class="n">RefreshStrategy</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">MetaData</span><span class="p">,</span> <span class="n">RowMapping</span><span class="p">,</span> <span class="n">Table</span><span class="p">,</span> <span class="n">text</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.exc</span> <span class="kn">import</span> <span class="n">InvalidRequestError</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.asyncio</span> <span class="kn">import</span> <span class="n">AsyncEngine</span><span class="p">,</span> <span class="n">create_async_engine</span>
+
+<span class="kn">from</span> <span class="nn">.version</span> <span class="kn">import</span> <span class="n">__version__</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">asyncpg</span>  <span class="c1"># type: ignore</span>
+    <span class="kn">import</span> <span class="nn">google.auth.credentials</span>  <span class="c1"># type: ignore</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+<span class="n">USER_AGENT</span> <span class="o">=</span> <span class="s2">&quot;langchain-google-alloydb-pg-python/&quot;</span> <span class="o">+</span> <span class="n">__version__</span>
+
+
+<div class="viewcode-block" id="_get_iam_principal_email"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/engine.html#langchain_google_alloydb_pg.engine._get_iam_principal_email">[docs]</a><span class="k">async</span> <span class="k">def</span> <span class="nf">_get_iam_principal_email</span><span class="p">(</span>
+    <span class="n">credentials</span><span class="p">:</span> <span class="n">google</span><span class="o">.</span><span class="n">auth</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">Credentials</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get email address associated with current authenticated IAM principal.</span>
+
+<span class="sd">    Email will be used for automatic IAM database authentication to AlloyDB.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        credentials (google.auth.credentials.Credentials):</span>
+<span class="sd">            The credentials object to use in finding the associated IAM</span>
+<span class="sd">            principal email address.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        email (str):</span>
+<span class="sd">            The email address associated with the current authenticated IAM</span>
+<span class="sd">            principal.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># refresh credentials if they are not valid</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">credentials</span><span class="o">.</span><span class="n">valid</span><span class="p">:</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">google</span><span class="o">.</span><span class="n">auth</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">requests</span><span class="o">.</span><span class="n">Request</span><span class="p">()</span>
+        <span class="n">credentials</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">credentials</span><span class="p">,</span> <span class="s2">&quot;_service_account_email&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">credentials</span><span class="o">.</span><span class="n">_service_account_email</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.gserviceaccount.com&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="c1"># call OAuth2 api to get IAM principal email associated with OAuth2 token</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://oauth2.googleapis.com/tokeninfo?access_token=</span><span class="si">{</span><span class="n">credentials</span><span class="o">.</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientSession</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">raise_for_status</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">response_json</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="k">await</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">email</span> <span class="o">=</span> <span class="n">response_json</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">email</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Failed to automatically obtain authenticated IAM principal&#39;s &quot;</span>
+            <span class="s2">&quot;email address using environment&#39;s ADC credentials!&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">email</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.gserviceaccount.com&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Column"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/engine.html#langchain_google_alloydb_pg.engine.Column">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Column</span><span class="p">:</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">data_type</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">nullable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Column name must be type string&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_type</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Column data_type must be type string&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AlloyDBEngine"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/engine.html#langchain_google_alloydb_pg.engine.AlloyDBEngine">[docs]</a><span class="k">class</span> <span class="nc">AlloyDBEngine</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for managing connections to a AlloyDB database.&quot;&quot;&quot;</span>
+
+    <span class="n">_connector</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AsyncConnector</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="n">AsyncEngine</span><span class="p">,</span>
+        <span class="n">loop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">],</span>
+        <span class="n">thread</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Thread</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span> <span class="o">=</span> <span class="n">engine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loop</span> <span class="o">=</span> <span class="n">loop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span> <span class="o">=</span> <span class="n">thread</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_instance</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AlloyDBEngine</span><span class="p">],</span>
+        <span class="n">project_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">region</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">cluster</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">instance</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">database</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ip_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">IPTypes</span><span class="p">]</span> <span class="o">=</span> <span class="n">IPTypes</span><span class="o">.</span><span class="n">PUBLIC</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBEngine</span><span class="p">:</span>
+        <span class="c1"># Running a loop in a background thread allows us to support</span>
+        <span class="c1"># async methods from non-async environments</span>
+        <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">new_event_loop</span><span class="p">()</span>
+        <span class="n">thread</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">loop</span><span class="o">.</span><span class="n">run_forever</span><span class="p">,</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_create</span><span class="p">(</span>
+            <span class="n">project_id</span><span class="p">,</span>
+            <span class="n">region</span><span class="p">,</span>
+            <span class="n">cluster</span><span class="p">,</span>
+            <span class="n">instance</span><span class="p">,</span>
+            <span class="n">database</span><span class="p">,</span>
+            <span class="n">ip_type</span><span class="p">,</span>
+            <span class="n">user</span><span class="p">,</span>
+            <span class="n">password</span><span class="p">,</span>
+            <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">,</span>
+            <span class="n">thread</span><span class="o">=</span><span class="n">thread</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run_coroutine_threadsafe</span><span class="p">(</span><span class="n">coro</span><span class="p">,</span> <span class="n">loop</span><span class="p">)</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_create</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AlloyDBEngine</span><span class="p">],</span>
+        <span class="n">project_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">region</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">cluster</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">instance</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">database</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">ip_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">IPTypes</span><span class="p">],</span>
+        <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">loop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">thread</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Thread</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBEngine</span><span class="p">:</span>
+        <span class="c1"># error if only one of user or password is set, must be both or neither</span>
+        <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">user</span><span class="p">)</span> <span class="o">^</span> <span class="nb">bool</span><span class="p">(</span><span class="n">password</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Only one of &#39;user&#39; or &#39;password&#39; were specified. Either &quot;</span>
+                <span class="s2">&quot;both should be specified to use basic user/password &quot;</span>
+                <span class="s2">&quot;authentication or neither for IAM DB authentication.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_connector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_connector</span> <span class="o">=</span> <span class="n">AsyncConnector</span><span class="p">(</span>
+                <span class="n">user_agent</span><span class="o">=</span><span class="n">USER_AGENT</span><span class="p">,</span> <span class="n">refresh_strategy</span><span class="o">=</span><span class="n">RefreshStrategy</span><span class="o">.</span><span class="n">LAZY</span>
+            <span class="p">)</span>
+
+        <span class="c1"># if user and password are given, use basic auth</span>
+        <span class="k">if</span> <span class="n">user</span> <span class="ow">and</span> <span class="n">password</span><span class="p">:</span>
+            <span class="n">enable_iam_auth</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">db_user</span> <span class="o">=</span> <span class="n">user</span>
+        <span class="c1"># otherwise use automatic IAM database authentication</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># get application default credentials</span>
+            <span class="n">credentials</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">google</span><span class="o">.</span><span class="n">auth</span><span class="o">.</span><span class="n">default</span><span class="p">(</span>
+                <span class="n">scopes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;https://www.googleapis.com/auth/userinfo.email&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">db_user</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_get_iam_principal_email</span><span class="p">(</span><span class="n">credentials</span><span class="p">)</span>
+            <span class="n">enable_iam_auth</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># anonymous function to be used for SQLAlchemy &#39;creator&#39; argument</span>
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">getconn</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">asyncpg</span><span class="o">.</span><span class="n">Connection</span><span class="p">:</span>
+            <span class="n">conn</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+                <span class="sa">f</span><span class="s2">&quot;projects/</span><span class="si">{</span><span class="n">project_id</span><span class="si">}</span><span class="s2">/locations/</span><span class="si">{</span><span class="n">region</span><span class="si">}</span><span class="s2">/clusters/</span><span class="si">{</span><span class="n">cluster</span><span class="si">}</span><span class="s2">/instances/</span><span class="si">{</span><span class="n">instance</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;asyncpg&quot;</span><span class="p">,</span>
+                <span class="n">user</span><span class="o">=</span><span class="n">db_user</span><span class="p">,</span>
+                <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span>
+                <span class="n">db</span><span class="o">=</span><span class="n">database</span><span class="p">,</span>
+                <span class="n">enable_iam_auth</span><span class="o">=</span><span class="n">enable_iam_auth</span><span class="p">,</span>
+                <span class="n">ip_type</span><span class="o">=</span><span class="n">ip_type</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">conn</span>
+
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">create_async_engine</span><span class="p">(</span>
+            <span class="s2">&quot;postgresql+asyncpg://&quot;</span><span class="p">,</span>
+            <span class="n">async_creator</span><span class="o">=</span><span class="n">getconn</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">loop</span><span class="p">,</span> <span class="n">thread</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">afrom_instance</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AlloyDBEngine</span><span class="p">],</span>
+        <span class="n">project_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">region</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">cluster</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">instance</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">database</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ip_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">IPTypes</span><span class="p">]</span> <span class="o">=</span> <span class="n">IPTypes</span><span class="o">.</span><span class="n">PUBLIC</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBEngine</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_create</span><span class="p">(</span>
+            <span class="n">project_id</span><span class="p">,</span>
+            <span class="n">region</span><span class="p">,</span>
+            <span class="n">cluster</span><span class="p">,</span>
+            <span class="n">instance</span><span class="p">,</span>
+            <span class="n">database</span><span class="p">,</span>
+            <span class="n">ip_type</span><span class="p">,</span>
+            <span class="n">user</span><span class="p">,</span>
+            <span class="n">password</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_engine</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AlloyDBEngine</span><span class="p">],</span> <span class="n">engine</span><span class="p">:</span> <span class="n">AsyncEngine</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlloyDBEngine</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AlloyDBEngine._aexecute"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/engine.html#langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">_aexecute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a SQL query.&quot;&quot;&quot;</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="n">query</span><span class="p">),</span> <span class="n">params</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="AlloyDBEngine._aexecute_outside_tx"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/engine.html#langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute_outside_tx">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">_aexecute_outside_tx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute a SQL query.&quot;&quot;&quot;</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;COMMIT&quot;</span><span class="p">))</span>
+            <span class="k">await</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="n">query</span><span class="p">))</span></div>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_afetch</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">RowMapping</span><span class="p">]:</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Fetch results from a SQL query.&quot;&quot;&quot;</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="n">query</span><span class="p">),</span> <span class="n">params</span><span class="p">)</span>
+            <span class="n">result_map</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">mappings</span><span class="p">()</span>
+            <span class="n">result_fetch</span> <span class="o">=</span> <span class="n">result_map</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">result_fetch</span>
+
+    <span class="k">def</span> <span class="nf">_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">params</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">RowMapping</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_afetch</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">params</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_run_as_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coro</span><span class="p">:</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Engine was initialized async.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run_coroutine_threadsafe</span><span class="p">(</span><span class="n">coro</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop</span><span class="p">)</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">ainit_vectorstore_table</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">vector_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;content&quot;</span><span class="p">,</span>
+        <span class="n">embedding_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;embedding&quot;</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Column</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_metadata&quot;</span><span class="p">,</span>
+        <span class="n">id_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_id&quot;</span><span class="p">,</span>
+        <span class="n">overwrite_existing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">store_metadata</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="s2">&quot;CREATE EXTENSION IF NOT EXISTS vector&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">overwrite_existing</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;DROP TABLE IF EXISTS &quot;</span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;CREATE TABLE &quot;</span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s2">&quot;(</span>
+<span class="s2">            &quot;</span><span class="si">{</span><span class="n">id_column</span><span class="si">}</span><span class="s2">&quot; UUID PRIMARY KEY,</span>
+<span class="s2">            &quot;</span><span class="si">{</span><span class="n">content_column</span><span class="si">}</span><span class="s2">&quot; TEXT NOT NULL,</span>
+<span class="s2">            &quot;</span><span class="si">{</span><span class="n">embedding_column</span><span class="si">}</span><span class="s2">&quot; vector(</span><span class="si">{</span><span class="n">vector_size</span><span class="si">}</span><span class="s2">) NOT NULL&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">metadata_columns</span><span class="p">:</span>
+            <span class="n">nullable</span> <span class="o">=</span> <span class="s2">&quot;NOT NULL&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">column</span><span class="o">.</span><span class="n">nullable</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">query</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;,</span><span class="se">\n</span><span class="s1">&quot;</span><span class="si">{</span><span class="n">column</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot; </span><span class="si">{</span><span class="n">column</span><span class="o">.</span><span class="n">data_type</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">nullable</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="n">store_metadata</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;,</span><span class="se">\n</span><span class="s1">&quot;</span><span class="si">{</span><span class="n">metadata_json_column</span><span class="si">}</span><span class="s1">&quot; JSON&#39;</span>
+        <span class="n">query</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">);&quot;</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">init_vectorstore_table</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">vector_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;content&quot;</span><span class="p">,</span>
+        <span class="n">embedding_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;embedding&quot;</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Column</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_metadata&quot;</span><span class="p">,</span>
+        <span class="n">id_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_id&quot;</span><span class="p">,</span>
+        <span class="n">overwrite_existing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">store_metadata</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ainit_vectorstore_table</span><span class="p">(</span>
+                <span class="n">table_name</span><span class="p">,</span>
+                <span class="n">vector_size</span><span class="p">,</span>
+                <span class="n">content_column</span><span class="p">,</span>
+                <span class="n">embedding_column</span><span class="p">,</span>
+                <span class="n">metadata_columns</span><span class="p">,</span>
+                <span class="n">metadata_json_column</span><span class="p">,</span>
+                <span class="n">id_column</span><span class="p">,</span>
+                <span class="n">overwrite_existing</span><span class="p">,</span>
+                <span class="n">store_metadata</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">ainit_chat_history_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">create_table_query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;CREATE TABLE IF NOT EXISTS &quot;</span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s2">&quot;(</span>
+<span class="s2">            id SERIAL PRIMARY KEY,</span>
+<span class="s2">            session_id TEXT NOT NULL,</span>
+<span class="s2">            data JSONB NOT NULL,</span>
+<span class="s2">            type TEXT NOT NULL</span>
+<span class="s2">        );&quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="n">create_table_query</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">init_chat_history_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ainit_chat_history_table</span><span class="p">(</span>
+                <span class="n">table_name</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="AlloyDBEngine.ainit_document_table"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/engine.html#langchain_google_alloydb_pg.engine.AlloyDBEngine.ainit_document_table">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">ainit_document_table</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;page_content&quot;</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Column</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_metadata&quot;</span><span class="p">,</span>
+        <span class="n">store_metadata</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a table for saving of langchain documents.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            table_name (str): The PgSQL database table name.</span>
+<span class="sd">            metadata_columns (List[Column]): A list of Columns</span>
+<span class="sd">                to create for custom metadata. Optional.</span>
+<span class="sd">            store_metadata (bool): Whether to store extra metadata in a metadata column</span>
+<span class="sd">                if not described in &#39;metadata&#39; field list (Default: True).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;CREATE TABLE &quot;</span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s2">&quot;(</span>
+<span class="s2">            </span><span class="si">{</span><span class="n">content_column</span><span class="si">}</span><span class="s2"> TEXT NOT NULL</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">metadata_columns</span><span class="p">:</span>
+            <span class="n">nullable</span> <span class="o">=</span> <span class="s2">&quot;NOT NULL&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">column</span><span class="o">.</span><span class="n">nullable</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">query</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;,</span><span class="se">\n</span><span class="s1">&quot;</span><span class="si">{</span><span class="n">column</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot; </span><span class="si">{</span><span class="n">column</span><span class="o">.</span><span class="n">data_type</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">nullable</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">metadata_json_column</span> <span class="o">=</span> <span class="n">metadata_json_column</span> <span class="ow">or</span> <span class="s2">&quot;langchain_metadata&quot;</span>
+        <span class="k">if</span> <span class="n">store_metadata</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;,</span><span class="se">\n</span><span class="s1">&quot;</span><span class="si">{</span><span class="n">metadata_json_column</span><span class="si">}</span><span class="s1">&quot; JSON&#39;</span>
+        <span class="n">query</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">);&quot;</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aexecute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">init_document_table</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">content_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;page_content&quot;</span><span class="p">,</span>
+        <span class="n">metadata_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Column</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">metadata_json_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;langchain_metadata&quot;</span><span class="p">,</span>
+        <span class="n">store_metadata</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_as_sync</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ainit_document_table</span><span class="p">(</span>
+                <span class="n">table_name</span><span class="p">,</span>
+                <span class="n">content_column</span><span class="p">,</span>
+                <span class="n">metadata_columns</span><span class="p">,</span>
+                <span class="n">metadata_json_column</span><span class="p">,</span>
+                <span class="n">store_metadata</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="AlloyDBEngine._aload_table_schema"><a class="viewcode-back" href="../../langchain_google_alloydb_pg/engine.html#langchain_google_alloydb_pg.engine.AlloyDBEngine._aload_table_schema">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">_aload_table_schema</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Table</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load table schema from existing table in PgSQL database.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (sqlalchemy.Table): The loaded table.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">MetaData</span><span class="p">()</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">await</span> <span class="n">conn</span><span class="o">.</span><span class="n">run_sync</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">reflect</span><span class="p">,</span> <span class="n">only</span><span class="o">=</span><span class="p">[</span><span class="n">table_name</span><span class="p">])</span>
+            <span class="k">except</span> <span class="n">InvalidRequestError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Table, </span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s2">, does not exist: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+        <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+        <span class="c1"># Extract the schema information</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">schema</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">column</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">column</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">python_type</span><span class="p">,</span>
+                    <span class="s2">&quot;max_length&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">column</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="s2">&quot;length&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                    <span class="s2">&quot;nullable&quot;</span><span class="p">:</span> <span class="ow">not</span> <span class="n">column</span><span class="o">.</span><span class="n">nullable</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">metadata</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">langchain-google-alloydb-pg</a></h1>
+
+
+
+<p class="blurb">Google Cloud Client Libraries for langchain-google-alloydb-pg</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=googleapis&repo=langchain-google-alloydb-pg-python&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/engine.html">Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/vectorstore.html">Vector Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/loader.html">Document Loader</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../langchain_google_alloydb_pg/history.html">Chat Message History</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Google.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 4.5.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/googleapis/langchain-google-alloydb-pg-python" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

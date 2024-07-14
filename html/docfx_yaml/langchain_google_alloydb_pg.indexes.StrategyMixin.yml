@@ -1,0 +1,28 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- attributes: []
+  children: []
+  class: langchain_google_alloydb_pg.indexes.StrategyMixin
+  enum: []
+  fullName: langchain_google_alloydb_pg.indexes.StrategyMixin
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.indexes
+  name: StrategyMixin
+  source:
+    id: StrategyMixin
+    path: src/langchain_google_alloydb_pg/indexes.py
+    startLine: 21
+  summary: 'StrategyMixin(operator: str, search_function: str, index_function: str,
+    scann_index_function: str)
+
+
+    '
+  syntax:
+    content: "StrategyMixin(\n    operator: str, search_function: str, index_function:\
+      \ str, scann_index_function: str\n)"
+    parameters: []
+  type: class
+  uid: langchain_google_alloydb_pg.indexes.StrategyMixin
+references: []

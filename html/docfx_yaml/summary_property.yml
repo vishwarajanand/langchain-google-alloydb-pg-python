@@ -1,0 +1,27 @@
+### YamlMime:UniversalReference
+items:
+- children:
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.embeddings-summary
+  fullName: Properties and Attributes Summary
+  langs:
+  - python
+  name: Properties and Attributes
+  summary: Summary of entries of Properties and Attributes for langchain-google-alloydb-pg.
+  type: package
+  uid: property-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.embeddings
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.embeddings
+  summary: 'Access the query embedding object if available.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.embeddings](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_embeddings)'
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.embeddings-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.embeddings
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.embeddings
+  summary: 'Access the query embedding object if available.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.embeddings](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_embeddings)'
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.embeddings-summary

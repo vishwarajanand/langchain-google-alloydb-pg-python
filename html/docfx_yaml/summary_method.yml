@@ -1,0 +1,578 @@
+### YamlMime:UniversalReference
+items:
+- children:
+  - langchain_google_alloydb_pg.chat_message_history._aget_messages-summary
+  - langchain_google_alloydb_pg.engine._get_iam_principal_email-summary
+  - langchain_google_alloydb_pg.vectorstore.cosine_similarity-summary
+  - langchain_google_alloydb_pg.vectorstore.maximal_marginal_relevance-summary
+  - langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_message-summary
+  - langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_messages-summary
+  - langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aclear-summary
+  - langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_message-summary
+  - langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_messages-summary
+  - langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.clear-summary
+  - langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute-summary
+  - langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute_outside_tx-summary
+  - langchain_google_alloydb_pg.engine.AlloyDBEngine._aload_table_schema-summary
+  - langchain_google_alloydb_pg.engine.AlloyDBEngine.ainit_document_table-summary
+  - langchain_google_alloydb_pg.indexes.DistanceStrategy._generate_next_value_-summary
+  - langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.aadd_documents-summary
+  - langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.adelete-summary
+  - langchain_google_alloydb_pg.loader.AlloyDBLoader.alazy_load-summary
+  - langchain_google_alloydb_pg.loader.AlloyDBLoader.aload-summary
+  - langchain_google_alloydb_pg.loader.AlloyDBLoader.create-summary
+  - langchain_google_alloydb_pg.loader.AlloyDBLoader.lazy_load-summary
+  - langchain_google_alloydb_pg.loader.AlloyDBLoader.load-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_documents-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_texts-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_documents-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_texts-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.adelete-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_documents-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_texts-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search_by_vector-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_by_vector-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_with_score-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.create-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.delete-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_documents-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_texts-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search_by_vector-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_by_vector-summary
+  - langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_with_score-summary
+  fullName: Methods Summary
+  langs:
+  - python
+  name: Methods
+  summary: Summary of entries of Methods for langchain-google-alloydb-pg.
+  type: package
+  uid: method-summary
+- fullName: langchain_google_alloydb_pg.chat_message_history._aget_messages
+  name: langchain_google_alloydb_pg.chat_message_history._aget_messages
+  summary: 'Retrieve the messages from AlloyDB.
+
+
+    See more: [langchain_google_alloydb_pg.chat_message_history._aget_messages](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.chat_message_history#langchain_google_alloydb_pg_chat_message_history__aget_messages)'
+  syntax:
+    content: "_aget_messages(\n    engine: langchain_google_alloydb_pg.engine.AlloyDBEngine,\n\
+      \    session_id: str,\n    table_name: str,\n) -> typing.List[langchain_core.messages.base.BaseMessage]"
+  type: method
+  uid: langchain_google_alloydb_pg.chat_message_history._aget_messages-summary
+- fullName: langchain_google_alloydb_pg.engine._get_iam_principal_email
+  name: langchain_google_alloydb_pg.engine._get_iam_principal_email
+  summary: 'Get email address associated with current authenticated IAM principal.
+
+
+    See more: [langchain_google_alloydb_pg.engine._get_iam_principal_email](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.engine#langchain_google_alloydb_pg_engine__get_iam_principal_email)'
+  syntax:
+    content: '_get_iam_principal_email(credentials: google.auth.credentials.Credentials)
+      -> str'
+  type: method
+  uid: langchain_google_alloydb_pg.engine._get_iam_principal_email-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.cosine_similarity
+  name: langchain_google_alloydb_pg.vectorstore.cosine_similarity
+  summary: 'Row-wise cosine similarity between two equal-width matrices.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.cosine_similarity](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore#langchain_google_alloydb_pg_vectorstore_cosine_similarity)'
+  syntax:
+    content: "cosine_similarity(\n    X: typing.Union[\n        typing.List[typing.List[float]],\
+      \ typing.List[numpy.ndarray], numpy.ndarray\n    ],\n    Y: typing.Union[\n\
+      \        typing.List[typing.List[float]], typing.List[numpy.ndarray], numpy.ndarray\n\
+      \    ],\n) -> numpy.ndarray"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.cosine_similarity-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.maximal_marginal_relevance
+  name: langchain_google_alloydb_pg.vectorstore.maximal_marginal_relevance
+  summary: 'Calculate maximal marginal relevance.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.maximal_marginal_relevance](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore#langchain_google_alloydb_pg_vectorstore_maximal_marginal_relevance)'
+  syntax:
+    content: "maximal_marginal_relevance(\n    query_embedding: numpy.ndarray,\n \
+      \   embedding_list: list,\n    lambda_mult: float = 0.5,\n    k: int = 4,\n\
+      ) -> typing.List[int]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.maximal_marginal_relevance-summary
+- fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_message
+  name: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_message
+  summary: 'Append the message to the record in AlloyDB.
+
+
+    See more: [langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_message](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory#langchain_google_alloydb_pg_chat_message_history_AlloyDBChatMessageHistory_aadd_message)'
+  syntax:
+    content: 'aadd_message(message: langchain_core.messages.base.BaseMessage) -> None'
+  type: method
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_message-summary
+- fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_messages
+  name: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_messages
+  summary: 'Async add a list of messages.
+
+
+    See more: [langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_messages](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory#langchain_google_alloydb_pg_chat_message_history_AlloyDBChatMessageHistory_aadd_messages)'
+  syntax:
+    content: "aadd_messages(\n    messages: typing.Sequence[langchain_core.messages.base.BaseMessage],\n\
+      ) -> None"
+  type: method
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aadd_messages-summary
+- fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aclear
+  name: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aclear
+  summary: 'Clear session memory from AlloyDB.
+
+
+    See more: [langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aclear](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory#langchain_google_alloydb_pg_chat_message_history_AlloyDBChatMessageHistory_aclear)'
+  syntax:
+    content: aclear() -> None
+  type: method
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.aclear-summary
+- fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_message
+  name: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_message
+  summary: 'Add a Message object to the store.
+
+
+    See more: [langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_message](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory#langchain_google_alloydb_pg_chat_message_history_AlloyDBChatMessageHistory_add_message)'
+  syntax:
+    content: 'add_message(message: langchain_core.messages.base.BaseMessage) -> None'
+  type: method
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_message-summary
+- fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_messages
+  name: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_messages
+  summary: 'Add a list of messages.
+
+
+    See more: [langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_messages](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory#langchain_google_alloydb_pg_chat_message_history_AlloyDBChatMessageHistory_add_messages)'
+  syntax:
+    content: "add_messages(\n    messages: typing.Sequence[langchain_core.messages.base.BaseMessage],\n\
+      ) -> None"
+  type: method
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.add_messages-summary
+- fullName: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.clear
+  name: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.clear
+  summary: 'Remove all messages from the store.
+
+
+    See more: [langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.clear](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory#langchain_google_alloydb_pg_chat_message_history_AlloyDBChatMessageHistory_clear)'
+  syntax:
+    content: clear() -> None
+  type: method
+  uid: langchain_google_alloydb_pg.chat_message_history.AlloyDBChatMessageHistory.clear-summary
+- fullName: langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute
+  name: langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute
+  summary: 'Execute a SQL query.
+
+
+    See more: [langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.engine.AlloyDBEngine#langchain_google_alloydb_pg_engine_AlloyDBEngine__aexecute)'
+  syntax:
+    content: '_aexecute(query: str, params: typing.Optional[dict] = None) -> None'
+  type: method
+  uid: langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute-summary
+- fullName: langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute_outside_tx
+  name: langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute_outside_tx
+  summary: 'Execute a SQL query.
+
+
+    See more: [langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute_outside_tx](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.engine.AlloyDBEngine#langchain_google_alloydb_pg_engine_AlloyDBEngine__aexecute_outside_tx)'
+  syntax:
+    content: '_aexecute_outside_tx(query: str) -> None'
+  type: method
+  uid: langchain_google_alloydb_pg.engine.AlloyDBEngine._aexecute_outside_tx-summary
+- fullName: langchain_google_alloydb_pg.engine.AlloyDBEngine._aload_table_schema
+  name: langchain_google_alloydb_pg.engine.AlloyDBEngine._aload_table_schema
+  summary: 'Load table schema from existing table in PgSQL database.
+
+
+    See more: [langchain_google_alloydb_pg.engine.AlloyDBEngine._aload_table_schema](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.engine.AlloyDBEngine#langchain_google_alloydb_pg_engine_AlloyDBEngine__aload_table_schema)'
+  syntax:
+    content: '_aload_table_schema(table_name: str) -> sqlalchemy.sql.schema.Table'
+  type: method
+  uid: langchain_google_alloydb_pg.engine.AlloyDBEngine._aload_table_schema-summary
+- fullName: langchain_google_alloydb_pg.engine.AlloyDBEngine.ainit_document_table
+  name: langchain_google_alloydb_pg.engine.AlloyDBEngine.ainit_document_table
+  summary: 'Create a table for saving of langchain documents.
+
+
+    See more: [langchain_google_alloydb_pg.engine.AlloyDBEngine.ainit_document_table](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.engine.AlloyDBEngine#langchain_google_alloydb_pg_engine_AlloyDBEngine_ainit_document_table)'
+  syntax:
+    content: "ainit_document_table(\n    table_name: str,\n    content_column: str\
+      \ = \"page_content\",\n    metadata_columns: typing.List[langchain_google_alloydb_pg.engine.Column]\
+      \ = [],\n    metadata_json_column: str = \"langchain_metadata\",\n    store_metadata:\
+      \ bool = True,\n) -> None"
+  type: method
+  uid: langchain_google_alloydb_pg.engine.AlloyDBEngine.ainit_document_table-summary
+- fullName: langchain_google_alloydb_pg.indexes.DistanceStrategy._generate_next_value_
+  name: langchain_google_alloydb_pg.indexes.DistanceStrategy._generate_next_value_
+  summary: 'Generate the next value when not given.
+
+
+    See more: [langchain_google_alloydb_pg.indexes.DistanceStrategy._generate_next_value_](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.indexes.DistanceStrategy#langchain_google_alloydb_pg_indexes_DistanceStrategy__generate_next_value_)'
+  syntax:
+    content: _generate_next_value_(start, count, last_values)
+  type: method
+  uid: langchain_google_alloydb_pg.indexes.DistanceStrategy._generate_next_value_-summary
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.aadd_documents
+  name: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.aadd_documents
+  summary: 'Save documents in the DocumentSaver table.
+
+
+    See more: [langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.aadd_documents](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver#langchain_google_alloydb_pg_loader_AlloyDBDocumentSaver_aadd_documents)'
+  syntax:
+    content: 'aadd_documents(docs: typing.List[langchain_core.documents.base.Document])
+      -> None'
+  type: method
+  uid: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.aadd_documents-summary
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.adelete
+  name: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.adelete
+  summary: 'Delete all instances of a document from the DocumentSaver table by matching
+    the entire Document
+
+    object.
+
+
+    See more: [langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.adelete](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver#langchain_google_alloydb_pg_loader_AlloyDBDocumentSaver_adelete)'
+  syntax:
+    content: 'adelete(docs: typing.List[langchain_core.documents.base.Document]) ->
+      None'
+  type: method
+  uid: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.adelete-summary
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.alazy_load
+  name: langchain_google_alloydb_pg.loader.AlloyDBLoader.alazy_load
+  summary: 'Load AlloyDB data into Document objects lazily.
+
+
+    See more: [langchain_google_alloydb_pg.loader.AlloyDBLoader.alazy_load](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.loader.AlloyDBLoader#langchain_google_alloydb_pg_loader_AlloyDBLoader_alazy_load)'
+  syntax:
+    content: alazy_load() -> typing.AsyncIterator[langchain_core.documents.base.Document]
+  type: method
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.alazy_load-summary
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.aload
+  name: langchain_google_alloydb_pg.loader.AlloyDBLoader.aload
+  summary: 'Load AlloyDB data into Document objects.
+
+
+    See more: [langchain_google_alloydb_pg.loader.AlloyDBLoader.aload](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.loader.AlloyDBLoader#langchain_google_alloydb_pg_loader_AlloyDBLoader_aload)'
+  syntax:
+    content: aload() -> typing.List[langchain_core.documents.base.Document]
+  type: method
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.aload-summary
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.create
+  name: langchain_google_alloydb_pg.loader.AlloyDBLoader.create
+  summary: 'Constructor for AlloyDBLoader
+
+    .
+
+
+    See more: [langchain_google_alloydb_pg.loader.AlloyDBLoader.create](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.loader.AlloyDBLoader#langchain_google_alloydb_pg_loader_AlloyDBLoader_create)'
+  syntax:
+    content: "create(\n    engine: langchain_google_alloydb_pg.engine.AlloyDBEngine,\n\
+      \    query: typing.Optional[str] = None,\n    table_name: typing.Optional[str]\
+      \ = None,\n    content_columns: typing.Optional[typing.List[str]] = None,\n\
+      \    metadata_columns: typing.Optional[typing.List[str]] = None,\n    metadata_json_column:\
+      \ typing.Optional[str] = None,\n    format: typing.Optional[str] = None,\n \
+      \   formatter: typing.Optional[typing.Callable] = None,\n) -> langchain_google_alloydb_pg.loader.AlloyDBLoader"
+  type: method
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.create-summary
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.lazy_load
+  name: langchain_google_alloydb_pg.loader.AlloyDBLoader.lazy_load
+  summary: 'Load AlloyDB data into Document objects lazily.
+
+
+    See more: [langchain_google_alloydb_pg.loader.AlloyDBLoader.lazy_load](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.loader.AlloyDBLoader#langchain_google_alloydb_pg_loader_AlloyDBLoader_lazy_load)'
+  syntax:
+    content: lazy_load() -> typing.Iterator[langchain_core.documents.base.Document]
+  type: method
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.lazy_load-summary
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBLoader.load
+  name: langchain_google_alloydb_pg.loader.AlloyDBLoader.load
+  summary: 'Load AlloyDB data into Document objects.
+
+
+    See more: [langchain_google_alloydb_pg.loader.AlloyDBLoader.load](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.loader.AlloyDBLoader#langchain_google_alloydb_pg_loader_AlloyDBLoader_load)'
+  syntax:
+    content: load() -> typing.List[langchain_core.documents.base.Document]
+  type: method
+  uid: langchain_google_alloydb_pg.loader.AlloyDBLoader.load-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_documents
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_documents
+  summary: 'Run more documents through the embeddings and add to the vectorstore.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_documents](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_aadd_documents)'
+  syntax:
+    content: "aadd_documents(\n    documents: typing.List[langchain_core.documents.base.Document],\n\
+      \    ids: typing.Optional[typing.List[str]] = None,\n    **kwargs: typing.Any\n\
+      ) -> typing.List[str]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_documents-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_texts
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_texts
+  summary: 'Run more texts through the embeddings and add to the vectorstore.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_texts](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_aadd_texts)'
+  syntax:
+    content: "aadd_texts(\n    texts: typing.Iterable[str],\n    metadatas: typing.Optional[typing.List[dict]]\
+      \ = None,\n    ids: typing.Optional[typing.List[str]] = None,\n    **kwargs:\
+      \ typing.Any\n) -> typing.List[str]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.aadd_texts-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_documents
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_documents
+  summary: 'Add or update documents in the vectorstore.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_documents](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_add_documents)'
+  syntax:
+    content: "add_documents(\n    documents: typing.List[langchain_core.documents.base.Document],\n\
+      \    ids: typing.Optional[typing.List[str]] = None,\n    **kwargs: typing.Any\n\
+      ) -> typing.List[str]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_documents-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_texts
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_texts
+  summary: 'Run more texts through the embeddings and add to the vectorstore.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_texts](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_add_texts)'
+  syntax:
+    content: "add_texts(\n    texts: typing.Iterable[str],\n    metadatas: typing.Optional[typing.List[dict]]\
+      \ = None,\n    ids: typing.Optional[typing.List[str]] = None,\n    **kwargs:\
+      \ typing.Any\n) -> typing.List[str]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.add_texts-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.adelete
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.adelete
+  summary: 'Delete by vector ID or other criteria.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.adelete](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_adelete)'
+  syntax:
+    content: "adelete(\n    ids: typing.Optional[typing.List[str]] = None, **kwargs:\
+      \ typing.Any\n) -> typing.Optional[bool]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.adelete-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_documents
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_documents
+  summary: 'Return VectorStore initialized from documents and embeddings.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_documents](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_afrom_documents)'
+  syntax:
+    content: "afrom_documents(\n    documents: typing.List[langchain_core.documents.base.Document],\n\
+      \    embedding: langchain_core.embeddings.embeddings.Embeddings,\n    engine:\
+      \ langchain_google_alloydb_pg.engine.AlloyDBEngine,\n    table_name: str,\n\
+      \    ids: typing.Optional[typing.List[str]] = None,\n    content_column: str\
+      \ = \"content\",\n    embedding_column: str = \"embedding\",\n    metadata_columns:\
+      \ typing.List[str] = [],\n    ignore_metadata_columns: typing.Optional[typing.List[str]]\
+      \ = None,\n    id_column: str = \"langchain_id\",\n    metadata_json_column:\
+      \ str = \"langchain_metadata\",\n    **kwargs: typing.Any\n) -> langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_documents-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_texts
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_texts
+  summary: 'Return VectorStore initialized from texts and embeddings.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_texts](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_afrom_texts)'
+  syntax:
+    content: "afrom_texts(\n    texts: typing.List[str],\n    embedding: langchain_core.embeddings.embeddings.Embeddings,\n\
+      \    engine: langchain_google_alloydb_pg.engine.AlloyDBEngine,\n    table_name:\
+      \ str,\n    metadatas: typing.Optional[typing.List[dict]] = None,\n    ids:\
+      \ typing.Optional[typing.List[str]] = None,\n    content_column: str = \"content\"\
+      ,\n    embedding_column: str = \"embedding\",\n    metadata_columns: typing.List[str]\
+      \ = [],\n    ignore_metadata_columns: typing.Optional[typing.List[str]] = None,\n\
+      \    id_column: str = \"langchain_id\",\n    metadata_json_column: str = \"\
+      langchain_metadata\",\n    **kwargs: typing.Any\n) -> langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.afrom_texts-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search
+  summary: 'Return docs selected using the maximal marginal relevance.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_amax_marginal_relevance_search)'
+  syntax:
+    content: "amax_marginal_relevance_search(\n    query: str,\n    k: typing.Optional[int]\
+      \ = None,\n    fetch_k: typing.Optional[int] = None,\n    lambda_mult: typing.Optional[float]\
+      \ = None,\n    filter: typing.Optional[str] = None,\n    **kwargs: typing.Any\n\
+      ) -> typing.List[langchain_core.documents.base.Document]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search_by_vector
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search_by_vector
+  summary: 'Return docs selected using the maximal marginal relevance.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search_by_vector](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_amax_marginal_relevance_search_by_vector)'
+  syntax:
+    content: "amax_marginal_relevance_search_by_vector(\n    embedding: typing.List[float],\n\
+      \    k: typing.Optional[int] = None,\n    fetch_k: typing.Optional[int] = None,\n\
+      \    lambda_mult: typing.Optional[float] = None,\n    filter: typing.Optional[str]\
+      \ = None,\n    **kwargs: typing.Any\n) -> typing.List[langchain_core.documents.base.Document]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.amax_marginal_relevance_search_by_vector-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search
+  summary: 'Return docs most similar to query.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_asimilarity_search)'
+  syntax:
+    content: "asimilarity_search(\n    query: str,\n    k: typing.Optional[int] =\
+      \ None,\n    filter: typing.Optional[str] = None,\n    **kwargs: typing.Any\n\
+      ) -> typing.List[langchain_core.documents.base.Document]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_by_vector
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_by_vector
+  summary: 'Return docs most similar to embedding vector.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_by_vector](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_asimilarity_search_by_vector)'
+  syntax:
+    content: "asimilarity_search_by_vector(\n    embedding: typing.List[float],\n\
+      \    k: typing.Optional[int] = None,\n    filter: typing.Optional[str] = None,\n\
+      \    **kwargs: typing.Any\n) -> typing.List[langchain_core.documents.base.Document]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_by_vector-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_with_score
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_with_score
+  summary: 'Run similarity search with distance.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_with_score](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_asimilarity_search_with_score)'
+  syntax:
+    content: "asimilarity_search_with_score(\n    query: str,\n    k: typing.Optional[int]\
+      \ = None,\n    filter: typing.Optional[str] = None,\n    **kwargs: typing.Any\n\
+      ) -> typing.List[typing.Tuple[langchain_core.documents.base.Document, float]]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.asimilarity_search_with_score-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.create
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.create
+  summary: 'Constructor for AlloyDBVectorStore.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.create](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_create)'
+  syntax:
+    content: "create(\n    engine: langchain_google_alloydb_pg.engine.AlloyDBEngine,\n\
+      \    embedding_service: langchain_core.embeddings.embeddings.Embeddings,\n \
+      \   table_name: str,\n    content_column: str = \"content\",\n    embedding_column:\
+      \ str = \"embedding\",\n    metadata_columns: typing.List[str] = [],\n    ignore_metadata_columns:\
+      \ typing.Optional[typing.List[str]] = None,\n    id_column: str = \"langchain_id\"\
+      ,\n    metadata_json_column: typing.Optional[str] = \"langchain_metadata\",\n\
+      \    distance_strategy: langchain_google_alloydb_pg.indexes.DistanceStrategy\
+      \ = DistanceStrategy.COSINE_DISTANCE,\n    k: int = 4,\n    fetch_k: int = 20,\n\
+      \    lambda_mult: float = 0.5,\n    index_query_options: typing.Optional[\n\
+      \        langchain_google_alloydb_pg.indexes.QueryOptions\n    ] = None,\n)\
+      \ -> langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.create-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.delete
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.delete
+  summary: 'Delete by vector ID or other criteria.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.delete](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_delete)'
+  syntax:
+    content: "delete(\n    ids: typing.Optional[typing.List[str]] = None, **kwargs:\
+      \ typing.Any\n) -> typing.Optional[bool]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.delete-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_documents
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_documents
+  summary: 'Return VectorStore initialized from documents and embeddings.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_documents](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_from_documents)'
+  syntax:
+    content: "from_documents(\n    documents: typing.List[langchain_core.documents.base.Document],\n\
+      \    embedding: langchain_core.embeddings.embeddings.Embeddings,\n    engine:\
+      \ langchain_google_alloydb_pg.engine.AlloyDBEngine,\n    table_name: str,\n\
+      \    ids: typing.Optional[typing.List[str]] = None,\n    content_column: str\
+      \ = \"content\",\n    embedding_column: str = \"embedding\",\n    metadata_columns:\
+      \ typing.List[str] = [],\n    ignore_metadata_columns: typing.Optional[typing.List[str]]\
+      \ = None,\n    id_column: str = \"langchain_id\",\n    metadata_json_column:\
+      \ str = \"langchain_metadata\",\n    **kwargs: typing.Any\n) -> langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_documents-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_texts
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_texts
+  summary: 'Return VectorStore initialized from texts and embeddings.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_texts](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_from_texts)'
+  syntax:
+    content: "from_texts(\n    texts: typing.List[str],\n    embedding: langchain_core.embeddings.embeddings.Embeddings,\n\
+      \    engine: langchain_google_alloydb_pg.engine.AlloyDBEngine,\n    table_name:\
+      \ str,\n    metadatas: typing.Optional[typing.List[dict]] = None,\n    ids:\
+      \ typing.Optional[typing.List[str]] = None,\n    content_column: str = \"content\"\
+      ,\n    embedding_column: str = \"embedding\",\n    metadata_columns: typing.List[str]\
+      \ = [],\n    ignore_metadata_columns: typing.Optional[typing.List[str]] = None,\n\
+      \    id_column: str = \"langchain_id\",\n    metadata_json_column: str = \"\
+      langchain_metadata\",\n    **kwargs: typing.Any\n) -> langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.from_texts-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search
+  summary: 'Return docs selected using the maximal marginal relevance.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_max_marginal_relevance_search)'
+  syntax:
+    content: "max_marginal_relevance_search(\n    query: str,\n    k: typing.Optional[int]\
+      \ = None,\n    fetch_k: typing.Optional[int] = None,\n    lambda_mult: typing.Optional[float]\
+      \ = None,\n    filter: typing.Optional[str] = None,\n    **kwargs: typing.Any\n\
+      ) -> typing.List[langchain_core.documents.base.Document]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search_by_vector
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search_by_vector
+  summary: 'Return docs selected using the maximal marginal relevance.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search_by_vector](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_max_marginal_relevance_search_by_vector)'
+  syntax:
+    content: "max_marginal_relevance_search_by_vector(\n    embedding: typing.List[float],\n\
+      \    k: typing.Optional[int] = None,\n    fetch_k: typing.Optional[int] = None,\n\
+      \    lambda_mult: typing.Optional[float] = None,\n    filter: typing.Optional[str]\
+      \ = None,\n    **kwargs: typing.Any\n) -> typing.List[langchain_core.documents.base.Document]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.max_marginal_relevance_search_by_vector-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search
+  summary: 'Return docs most similar to query.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_similarity_search)'
+  syntax:
+    content: "similarity_search(\n    query: str,\n    k: typing.Optional[int] = None,\n\
+      \    filter: typing.Optional[str] = None,\n    **kwargs: typing.Any\n) -> typing.List[langchain_core.documents.base.Document]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_by_vector
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_by_vector
+  summary: 'Return docs most similar to embedding vector.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_by_vector](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_similarity_search_by_vector)'
+  syntax:
+    content: "similarity_search_by_vector(\n    embedding: typing.List[float],\n \
+      \   k: typing.Optional[int] = None,\n    filter: typing.Optional[str] = None,\n\
+      \    **kwargs: typing.Any\n) -> typing.List[langchain_core.documents.base.Document]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_by_vector-summary
+- fullName: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_with_score
+  name: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_with_score
+  summary: 'Run similarity search with distance.
+
+
+    See more: [langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_with_score](https://cloud.google.com/python/docs/reference/langchain-google-alloydb-pg/latest/langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore#langchain_google_alloydb_pg_vectorstore_AlloyDBVectorStore_similarity_search_with_score)'
+  syntax:
+    content: "similarity_search_with_score(\n    query: str,\n    k: typing.Optional[int]\
+      \ = None,\n    filter: typing.Optional[str] = None,\n    **kwargs: typing.Any\n\
+      ) -> typing.List[typing.Tuple[langchain_core.documents.base.Document, float]]"
+  type: method
+  uid: langchain_google_alloydb_pg.vectorstore.AlloyDBVectorStore.similarity_search_with_score-summary

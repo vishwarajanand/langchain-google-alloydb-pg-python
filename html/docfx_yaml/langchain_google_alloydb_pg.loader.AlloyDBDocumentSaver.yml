@@ -1,0 +1,90 @@
+### YamlMime:UniversalReference
+api_name: []
+items:
+- attributes: []
+  children:
+  - langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.aadd_documents
+  - langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.adelete
+  class: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver
+  enum: []
+  fullName: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.loader
+  name: AlloyDBDocumentSaver
+  source:
+    id: AlloyDBDocumentSaver
+    path: src/langchain_google_alloydb_pg/loader.py
+    startLine: 302
+  summary: 'A class for saving langchain documents into a AlloyDB database table.
+
+
+    '
+  syntax:
+    content: "AlloyDBDocumentSaver(\n    key: object,\n    engine: langchain_google_alloydb_pg.engine.AlloyDBEngine,\n\
+      \    table_name: str,\n    content_column: str,\n    metadata_columns: typing.List[str]\
+      \ = [],\n    metadata_json_column: typing.Optional[str] = None,\n)"
+    parameters: []
+  type: class
+  uid: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver
+- attributes: []
+  class: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver
+  enum: []
+  fullName: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.aadd_documents
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.loader
+  name: aadd_documents
+  source:
+    id: aadd_documents
+    path: src/langchain_google_alloydb_pg/loader.py
+    startLine: 389
+  summary: "Save documents in the DocumentSaver table. Document\u2019s metadata is\
+    \ added to columns if found or\nstored in langchain_metadata JSON column.\n"
+  syntax:
+    content: 'aadd_documents(docs: typing.List[langchain_core.documents.base.Document])
+      -> None'
+    parameters:
+    - description: a list of documents to be saved.
+      id: docs
+      var_type: List[langchain_core.documents.Document]
+  type: method
+  uid: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.aadd_documents
+- attributes: []
+  class: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver
+  enum: []
+  fullName: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.adelete
+  langs:
+  - python
+  module: langchain_google_alloydb_pg.loader
+  name: adelete
+  source:
+    id: adelete
+    path: src/langchain_google_alloydb_pg/loader.py
+    startLine: 434
+  summary: 'Delete all instances of a document from the DocumentSaver table by matching
+    the entire Document
+
+    object.
+
+    '
+  syntax:
+    content: 'adelete(docs: typing.List[langchain_core.documents.base.Document]) ->
+      None'
+    parameters:
+    - description: a list of documents to be deleted.
+      id: docs
+      var_type: List[langchain_core.documents.Document]
+  type: method
+  uid: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.adelete
+references:
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.aadd_documents
+  isExternal: false
+  name: aadd_documents
+  parent: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver
+  uid: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.aadd_documents
+- fullName: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.adelete
+  isExternal: false
+  name: adelete
+  parent: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver
+  uid: langchain_google_alloydb_pg.loader.AlloyDBDocumentSaver.adelete
